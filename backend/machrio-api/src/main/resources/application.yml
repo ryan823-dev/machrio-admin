@@ -1,0 +1,54 @@
+# =============================================
+# Machrio Admin API Configuration
+# =============================================
+
+spring:
+  application:
+    name: machrio-admin-api
+
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres
+    username: postgres.yderhgkjcsaqrsfntpqm
+    password: Machrio@2026
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+
+# Server Configuration
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Application Configuration
+app:
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:5173,http://localhost:4173
+  storage:
+    blob-endpoint: https://blob.vercel-blob.com
+
+# Logging
+logging:
+  level:
+    com.machrio.admin: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
