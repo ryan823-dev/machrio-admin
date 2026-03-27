@@ -1,0 +1,89 @@
+name: Auto Deploy to Aliyun ECS
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+env:
+  ECS_HOST: ${{ secrets.ALIYUN_ECS_HOST }}
+  ECS_USER: ${{ secrets.ALIYUN_ECS_USER }}
+  ECS_PATH: /opt/machrio-admin
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ALIYUN_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ env.ECS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Build Backend
+        run: |
+          cd backend/machrio-api
+          chmod +x gradlew
+          ./gradlew build -x test
+
+      - name: Package Application
+        run: |
+          tar -czf machrio-admin.tar.gz \
+            --exclude='node_modules' \
+            --exclude='.git' \
+            --exclude='*.log' \
+            --exclude='.idea' \
+            --exclude='.vscode' \
+            --exclude='target' \
+            --exclude='build' \
+            --exclude='dist' \
+            .
+
+      - name: Upload to ECS
+        run: |
+          scp machrio-admin.tar.gz ${{ env.ECS_USER }}@${{ env.ECS_HOST }}:${{ env.ECS_PATH }}/
+
+      - name: Deploy on ECS
+        run: |
+          ssh ${{ env.ECS_USER }}@${{ env.ECS_HOST }} << 'ENDSSH'
+          cd ${{ env.ECS_PATH }}
+          rm -rf *
+          tar -xzf machrio-admin.tar.gz
+          chmod +x deploy-aliyun.sh
+          ./deploy-aliyun.sh
+          ENDSSH
+
+      - name: Health Check
+        run: |
+          sleep 30
+          curl -f http://${{ env.ECS_HOST }}:8080/api/health || exit 1
+          curl -f http://${{ env.ECS_HOST }}/ || exit 1
+          echo "Deployment successful!"
