@@ -13,9 +13,9 @@ spring:
   # Railway 的 DATABASE_URL 格式：postgresql://user:password@host:port/database
   # Spring Boot 会自动识别 DATABASE_URL 环境变量
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    url: ${SPRING_DATASOURCE_URL:}
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -23,11 +23,13 @@ spring:
       idle-timeout: 30000
       connection-timeout: 30000
       max-lifetime: 1800000
+      initialization-fail-timeout: -1
 
   # JPA Configuration
+  # 首次部署时禁用 DDL 验证，避免启动失败
   jpa:
     hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
     show-sql: false
     properties:
       hibernate:

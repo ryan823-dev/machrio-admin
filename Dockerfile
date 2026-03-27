@@ -36,4 +36,7 @@ ENV SPRING_PROFILES_ACTIVE=production
 ENV LOGGING_LEVEL_ROOT=INFO
 ENV LOGGING_LEVEL_COM_MACHRIO=DEBUG
 
+# JVM options for better startup
+ENV JAVA_TOOL_OPTIONS="-Xms128m -Xmx512m -XX:+UseG1GC"
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
