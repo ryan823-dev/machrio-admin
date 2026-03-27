@@ -1,12 +1,8 @@
-# Railway Project Configuration
-# Backend Service
-
 [build]
-# Use Docker for building
-dockerfile = "backend/machrio-api/Dockerfile"
+dockerfile = "Dockerfile"
+root = "backend/machrio-api"
 
 [deploy]
 healthcheckPath = "/api/health"
 healthcheckTimeout = 180
 restartPolicyType = "ON_FAILURE"
-numReplicas = 1
