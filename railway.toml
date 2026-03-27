@@ -1,8 +1,5 @@
-[railway]
-builder = "docker"
-
 [docker]
-file = "backend/machrio-api/Dockerfile"
+file = "Dockerfile"
 context = "backend/machrio-api"
 
 [deploy]
