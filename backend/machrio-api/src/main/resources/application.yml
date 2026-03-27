@@ -10,18 +10,9 @@ spring:
     name: machrio-admin-api
 
   # Database Configuration
-  # 生产环境请使用环境变量：SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME, SPRING_DATASOURCE_PASSWORD
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres.yderhgkjcsaqrsfntpqm}
-    password: ${SPRING_DATASOURCE_PASSWORD:Machrio@2026}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
-      idle-timeout: 30000
-      connection-timeout: 30000
-      max-lifetime: 1800000
+  # Handled by DatabaseConfig.java to convert DATABASE_URL format
+  # Railway 的 DATABASE_URL 格式：postgresql://user:password@host:port/database
+  # 自动转换为 jdbc:postgresql://user:password@host:port/database
 
   # JPA Configuration
   jpa:

@@ -12,10 +12,13 @@ COPY backend/machrio-api/gradle ./gradle
 # Make gradlew executable
 RUN chmod +x ./gradlew
 
+# Download dependencies first (cached layer)
+RUN ./gradlew dependencies --no-daemon || true
+
 # Copy source code
 COPY backend/machrio-api/src ./src
 
-# Build the application (single command to avoid caching issues)
+# Build the application
 RUN ./gradlew clean build -x test --no-daemon
 
 # Runtime stage
