@@ -1,0 +1,11 @@
+# Railway 部署配置文件
+# 此文件用于配置 Railway 的部署行为
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 180
+restartPolicyType = "ON_FAILURE"
+numReplicas = 1

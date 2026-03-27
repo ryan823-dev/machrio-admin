@@ -1,0 +1,9 @@
+# Backend Railway Configuration
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 180
+restartPolicyType = "ON_FAILURE"
+numReplicas = 1

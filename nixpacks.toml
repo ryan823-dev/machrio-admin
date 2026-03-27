@@ -1,0 +1,8 @@
+# Nixpacks 配置文件 - 用于 Railway 自动检测 Java 21
+[phases.build]
+cmds = [
+  "cd backend/machrio-api && ./gradlew build -x test"
+]
+
+[start]
+cmd = "cd backend/machrio-api && java -jar build/libs/*.jar"
