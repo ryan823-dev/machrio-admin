@@ -1,0 +1,30 @@
+name: Trigger Railway Redeploy
+
+on:
+  push:
+    branches:
+      - main
+      paths:
+        - 'backend/**'
+        - 'Dockerfile'
+        - 'railway.json'
+
+jobs:
+  notify-redeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Railway Redeploy Required
+        run: |
+          echo "=========================================="
+          echo "代码已更新，需要在 Railway Dashboard 手动触发重新部署"
+          echo ""
+          echo "请访问：https://railway.app/dashboard"
+          echo "1. 选择 machrio-admin 项目"
+          echo "2. 点击 machrio-backend 服务"
+          echo "3. 点击右上角的 Redeploy 按钮"
+          echo ""
+          echo "本次更新内容："
+          echo "- 修复数据库配置以支持 Railway DATABASE_URL 格式"
+          echo "- 自动转换 postgresql:// 到 jdbc:postgresql://"
+          echo "- 修复健康检查失败问题"
+          echo "=========================================="

@@ -1,5 +1,17 @@
 # 🚀 立即部署到 Railway
 
+## ⚠️ 重要更新 - 数据库配置已修复
+
+**最新修复（2026-03-27）：**
+- ✅ 创建了 `DatabaseConfig.java` 自动转换 Railway 的 `postgresql://` 到 `jdbc:postgresql://`
+- ✅ 修改了 `application.yml` 移除了冗余配置
+- ✅ 更新了环境变量配置
+- ✅ 修复了健康检查失败问题
+
+**现在可以直接部署，无需手动配置数据库连接！**
+
+---
+
 ## 方法 1: 使用 Railway Dashboard（最快，推荐）
 
 ### 步骤：

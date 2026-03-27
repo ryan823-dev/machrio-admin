@@ -10,9 +10,19 @@ spring:
     name: machrio-admin-api
 
   # Database Configuration
-  # Handled by DatabaseConfig.java to convert DATABASE_URL format
   # Railway 的 DATABASE_URL 格式：postgresql://user:password@host:port/database
-  # 自动转换为 jdbc:postgresql://user:password@host:port/database
+  # Spring Boot 会自动识别 DATABASE_URL 环境变量
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
 
   # JPA Configuration
   jpa:

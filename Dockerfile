@@ -31,7 +31,9 @@ COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1
+# Enable detailed logging for debugging
+ENV SPRING_PROFILES_ACTIVE=production
+ENV LOGGING_LEVEL_ROOT=INFO
+ENV LOGGING_LEVEL_COM_MACHRIO=DEBUG
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
