@@ -1,8 +1,9 @@
-# Railway 部署配置文件
-# 此文件用于配置 Railway 的部署行为
+# Railway Project Configuration
+# Backend Service
 
 [build]
-builder = "NIXPACKS"
+# Use Docker for building
+dockerfile = "backend/machrio-api/Dockerfile"
 
 [deploy]
 healthcheckPath = "/api/health"
