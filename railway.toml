@@ -1,7 +1,9 @@
-[build]
-builder = "DOCKER"
-dockerfile = "backend/machrio-api/Dockerfile"
+[railway]
+builder = "docker"
+
+[docker]
+file = "backend/machrio-api/Dockerfile"
+context = "backend/machrio-api"
 
 [deploy]
 healthcheckPath = "/api/health"
-restartPolicyType = "ON_FAILURE"
