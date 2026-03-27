@@ -2,21 +2,33 @@ FROM eclipse-temurin:21-jdk-alpine AS build
 
 WORKDIR /app
 
-COPY backend/machrio-api/gradlew backend/machrio-api/gradlew.bat backend/machrio-api/settings.gradle backend/machrio-api/build.gradle ./
+# Copy Gradle wrapper files
+COPY backend/machrio-api/gradlew ./
+COPY backend/machrio-api/gradlew.bat ./
+COPY backend/machrio-api/settings.gradle ./
+COPY backend/machrio-api/build.gradle ./
 COPY backend/machrio-api/gradle ./gradle
 
-RUN chmod +x gradlew && ./gradlew dependencies --no-daemon || true
+# Make gradlew executable
+RUN chmod +x ./gradlew
 
+# Copy source code
 COPY backend/machrio-api/src ./src
 
-RUN ./gradlew build -x test --no-daemon
+# Build the application (single command to avoid caching issues)
+RUN ./gradlew clean build -x test --no-daemon
 
+# Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-COPY --from=build /app/backend/machrio-api/build/libs/*.jar app.jar
+# Copy the built jar file
+COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
