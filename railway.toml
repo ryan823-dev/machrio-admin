@@ -1,8 +1,7 @@
 [build]
-dockerfile = "Dockerfile"
-root = "backend/machrio-api"
+builder = "DOCKER"
+dockerfile = "backend/machrio-api/Dockerfile"
 
 [deploy]
 healthcheckPath = "/api/health"
-healthcheckTimeout = 180
 restartPolicyType = "ON_FAILURE"
