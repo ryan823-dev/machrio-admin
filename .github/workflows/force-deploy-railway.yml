@@ -1,0 +1,78 @@
+name: Force Deploy to Railway
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@latest
+
+      - name: Login to Railway
+        run: |
+          echo "Logging in to Railway..."
+          railway login --browserless
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Link Project
+        run: |
+          echo "Linking to Railway project..."
+          railway link --project ${{ secrets.RAILWAY_PROJECT_ID }} --environment production
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Set Environment Variables
+        run: |
+          echo "Setting environment variables..."
+          railway variables set SERVER_PORT=8080 --environment production
+          railway variables set APP_CORS_ALLOWED_ORIGINS="*" --environment production
+          railway variables set LOGGING_LEVEL_ROOT=INFO --environment production
+          railway variables set LOGGING_LEVEL_COM_MACHRIO=DEBUG --environment production
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy to Railway
+        run: |
+          echo "Deploying to Railway..."
+          railway up --detach --environment production
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Wait for deployment
+        run: sleep 90
+
+      - name: Check deployment status
+        run: |
+          echo "Checking deployment status..."
+          railway status --environment production
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: View deployment logs
+        run: |
+          echo "=== Deployment Logs ==="
+          railway logs --environment production --limit 100
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+
+      - name: Output deployment URL
+        run: |
+          echo "=========================================="
+          echo "Deployment completed!"
+          echo "Check your Railway dashboard for the URL:"
+          echo "https://railway.app/dashboard"
+          echo "=========================================="
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
