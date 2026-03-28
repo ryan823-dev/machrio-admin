@@ -1,0 +1,9 @@
+// Root build.gradle for multi-project structure
+// This delegates to the backend subproject
+
+plugins {
+    id 'base'
+}
+
+// The actual Spring Boot project is in backend/machrio-api
+// Railway will detect and build it automatically

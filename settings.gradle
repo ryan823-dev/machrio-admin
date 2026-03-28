@@ -1,0 +1,2 @@
+rootProject.name = 'machrio-admin'
+include 'backend:machrio-api'
