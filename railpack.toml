@@ -1,0 +1,22 @@
+# Railpack Configuration for Java/Spring Boot
+
+[build]
+# Explicit build commands
+commands = [
+  "cd backend/machrio-api && chmod +x gradlew",
+  "cd backend/machrio-api && ./gradlew build -x test --no-daemon"
+]
+
+# Output directory (where the JAR file will be)
+output_dir = "backend/machrio-api/build/libs"
+
+[start]
+# Start command
+command = "cd backend/machrio-api && java -Xms256m -Xmx512m -XX:+UseG1GC -jar $(ls build/libs/*.jar | head -1)"
+
+# Port configuration
+port = "8080"
+
+# Health check
+healthcheck_path = "/actuator/health"
+healthcheck_timeout = 600
