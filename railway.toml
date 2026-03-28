@@ -7,7 +7,7 @@
 [deploy]
 startCommand = "cd backend/machrio-api && java -jar build/libs/*.jar"
 healthcheckPath = "/actuator/health"
-healthcheckTimeout = 300
+healthcheckTimeout = 600
 numReplicas = 1
 restartPolicyType = "ON_FAILURE"
 
@@ -17,4 +17,5 @@ SPRING_PROFILES_ACTIVE = "production"
 SERVER_PORT = "8080"
 JAVA_TOOL_OPTIONS = "-Xms256m -Xmx512m -XX:+UseG1GC"
 SPRING_JPA_HIBERNATE_DDL_AUTO = "update"
-LOG_LEVEL_APP = "INFO"
+LOG_LEVEL_APP = "DEBUG"
+LOGGING_LEVEL_ROOT = "INFO"
