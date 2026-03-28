@@ -3,6 +3,7 @@ import { Table, Tag, Input, Typography, Card, Button, Space, Popconfirm, message
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getBrands, createBrand, updateBrand, deleteBrand } from '../services/api';
 import type { Brand } from '../types';
+import EmptyState from '../components/EmptyState';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -81,16 +82,25 @@ export default function BrandsPage() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-        <div><Title level={3} style={{ margin: 0 }}>Brands</Title><Text type="secondary">Manage product brands</Text></div>
-        <Button type="primary" icon={<PlusOutlined />} size="large" onClick={() => openDrawer()}>Add Brand</Button>
+        <div><Title level={3} style={{ margin: 0 }}>品牌管理</Title><Text type="secondary">管理产品品牌</Text></div>
+        <Button type="primary" icon={<PlusOutlined />} size="large" onClick={() => openDrawer()}>添加品牌</Button>
       </div>
       <Card style={{ borderRadius: 12 }}>
         <div style={{ marginBottom: 16 }}>
-          <Input placeholder="Search brands..." prefix={<SearchOutlined />} allowClear style={{ width: 280 }}
+          <Input placeholder="搜索品牌..." prefix={<SearchOutlined />} allowClear style={{ width: 280 }}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <Table dataSource={data} columns={columns} rowKey="id" loading={loading}
-          pagination={{ current: page, onChange: setPage, total, pageSize: 20, showSizeChanger: false, showTotal: (t) => `${t} brands` }} size="middle" />
+        {data.length === 0 && !loading ? (
+          <EmptyState
+            type="brands"
+            onPrimaryAction={() => openDrawer()}
+            primaryActionText="添加第一个品牌"
+            showRefresh
+          />
+        ) : (
+          <Table dataSource={data} columns={columns} rowKey="id" loading={loading}
+            pagination={{ current: page, onChange: setPage, total, pageSize: 20, showSizeChanger: false, showTotal: (t) => `共 ${t} 个品牌` }} size="middle" />
+        )}
       </Card>
       <Drawer title={editingBrand ? 'Edit Brand' : 'New Brand'} open={drawerOpen} onClose={() => setDrawerOpen(false)} width={520}
         extra={<Button type="primary" loading={saving} onClick={handleSave}>{editingBrand ? 'Save' : 'Create'}</Button>}>

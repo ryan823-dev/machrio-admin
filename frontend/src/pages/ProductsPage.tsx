@@ -4,6 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, ShoppingOut
 import { useNavigate } from 'react-router-dom';
 import { getProducts, deleteProduct } from '../services/api';
 import type { Product } from '../types';
+import EmptyState from '../components/EmptyState';
 
 const { Title, Text } = Typography;
 
@@ -167,8 +168,8 @@ export default function ProductsPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <Title level={3} style={{ margin: 0 }}>Products</Title>
-          <Text type="secondary">Manage your product catalog</Text>
+          <Title level={3} style={{ margin: 0 }}>商品管理</Title>
+          <Text type="secondary">管理您的产品目录</Text>
         </div>
         <Button
           type="primary"
@@ -176,7 +177,7 @@ export default function ProductsPage() {
           size="large"
           onClick={() => navigate('/products/new')}
         >
-          Add Product
+          添加商品
         </Button>
       </div>
 
@@ -184,16 +185,16 @@ export default function ProductsPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
           <Segmented
             options={[
-              { label: 'All', value: 'all' },
-              { label: 'Published', value: 'published' },
-              { label: 'Draft', value: 'draft' },
-              { label: 'Discontinued', value: 'discontinued' },
+              { label: '全部', value: 'all' },
+              { label: '已发布', value: 'published' },
+              { label: '草稿', value: 'draft' },
+              { label: '已停产', value: 'discontinued' },
             ]}
             value={statusFilter}
             onChange={(v) => { setStatusFilter(v as string); setPage(1); }}
           />
           <Input
-            placeholder="Search by name or SKU..."
+            placeholder="搜索商品名称或 SKU..."
             prefix={<SearchOutlined />}
             allowClear
             style={{ width: 280 }}
@@ -201,21 +202,30 @@ export default function ProductsPage() {
           />
         </div>
 
-        <Table
-          dataSource={data}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            current: page,
-            onChange: setPage,
-            total,
-            pageSize: 20,
-            showSizeChanger: false,
-            showTotal: (t) => `${t} products`,
-          }}
-          size="middle"
-        />
+        {data.length === 0 && !loading ? (
+          <EmptyState
+            type="products"
+            onPrimaryAction={() => navigate('/products/new')}
+            primaryActionText="添加第一个商品"
+            showRefresh
+          />
+        ) : (
+          <Table
+            dataSource={data}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              current: page,
+              onChange: setPage,
+              total,
+              pageSize: 20,
+              showSizeChanger: false,
+              showTotal: (t) => `共 ${t} 个商品`,
+            }}
+            size="middle"
+          />
+        )}
       </Card>
     </div>
   );

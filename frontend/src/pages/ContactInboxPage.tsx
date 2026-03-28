@@ -3,6 +3,7 @@ import { Table, Tag, Segmented, Typography, Card, Drawer, Descriptions, Select, 
 import { SearchOutlined } from '@ant-design/icons';
 import { getContactSubmissions, updateContactStatus } from '../services/api';
 import type { ContactSubmission } from '../types';
+import EmptyState from '../components/EmptyState';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -69,19 +70,36 @@ export default function ContactInboxPage() {
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <Title level={3} style={{ margin: 0 }}>Contact Inbox</Title>
-        <Text type="secondary">Customer inquiries and support requests</Text>
+        <Title level={3} style={{ margin: 0 }}>联系 inbox</Title>
+        <Text type="secondary">客户咨询和支持请求</Text>
       </div>
       <Card style={{ borderRadius: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-          <Segmented options={['all','new','replied','resolved'].map(v => ({ label: v === 'all' ? 'All' : v.charAt(0).toUpperCase() + v.slice(1), value: v }))}
+          <Segmented options={['all','new','replied','resolved'].map(v => {
+            const labels: Record<string, string> = {
+              all: '全部',
+              new: '新消息',
+              replied: '已回复',
+              resolved: '已解决',
+            };
+            return { label: labels[v] || v, value: v };
+          })}
             value={statusFilter} onChange={(v) => { setStatusFilter(v as string); setPage(1); }} />
-          <Input placeholder="Search..." prefix={<SearchOutlined />} allowClear style={{ width: 260 }}
+          <Input placeholder="搜索..." prefix={<SearchOutlined />} allowClear style={{ width: 260 }}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <Table dataSource={data} columns={columns} rowKey="id" loading={loading}
-          onRow={(r) => ({ onClick: () => { setSelected(r); setNotes(r.notes || ''); }, style: { cursor: 'pointer' } })}
-          pagination={{ current: page, onChange: setPage, total, pageSize: 20, showSizeChanger: false, showTotal: (t) => `${t} submissions` }} size="middle" />
+        {data.length === 0 && !loading ? (
+          <EmptyState
+            type="messages"
+            onPrimaryAction={() => {}}
+            primaryActionText="暂无操作"
+            showRefresh
+          />
+        ) : (
+          <Table dataSource={data} columns={columns} rowKey="id" loading={loading}
+            onRow={(r) => ({ onClick: () => { setSelected(r); setNotes(r.notes || ''); }, style: { cursor: 'pointer' } })}
+            pagination={{ current: page, onChange: setPage, total, pageSize: 20, showSizeChanger: false, showTotal: (t) => `共 ${t} 条消息` }} size="middle" />
+        )}
       </Card>
       <Drawer title="Contact Details" open={!!selected} onClose={() => setSelected(null)} width={520}>
         {selected && (

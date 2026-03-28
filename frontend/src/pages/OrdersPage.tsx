@@ -3,6 +3,7 @@ import { Table, Tag, Input, Space, Segmented, Typography, Card, Drawer, Descript
 import { SearchOutlined } from '@ant-design/icons';
 import { getOrders, updateOrder } from '../services/api';
 import type { Order } from '../types';
+import EmptyState from '../components/EmptyState';
 
 const { Title, Text } = Typography;
 
@@ -82,24 +83,43 @@ export default function OrdersPage() {
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <Title level={3} style={{ margin: 0 }}>Orders</Title>
-        <Text type="secondary">Manage customer orders and fulfillment</Text>
+        <Title level={3} style={{ margin: 0 }}>订单管理</Title>
+        <Text type="secondary">管理客户订单和履约</Text>
       </div>
 
       <Card style={{ borderRadius: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
           <Segmented
-            options={['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered'].map(v => ({ label: v === 'all' ? 'All' : v.charAt(0).toUpperCase() + v.slice(1), value: v }))}
+            options={['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered'].map(v => {
+              const labels: Record<string, string> = {
+                all: '全部',
+                pending: '待处理',
+                confirmed: '已确认',
+                processing: '处理中',
+                shipped: '已发货',
+                delivered: '已送达',
+              };
+              return { label: labels[v] || v, value: v };
+            })}
             value={statusFilter}
             onChange={(v) => { setStatusFilter(v as string); setPage(1); }}
           />
-          <Input placeholder="Search by order #..." prefix={<SearchOutlined />} allowClear style={{ width: 260 }}
+          <Input placeholder="搜索订单号..." prefix={<SearchOutlined />} allowClear style={{ width: 260 }}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <Table dataSource={data} columns={columns} rowKey="id" loading={loading}
-          onRow={(r) => ({ onClick: () => setSelectedOrder(r), style: { cursor: 'pointer' } })}
-          pagination={{ current: page, onChange: setPage, total, pageSize: 20, showSizeChanger: false, showTotal: (t) => `${t} orders` }}
-          size="middle" />
+        {data.length === 0 && !loading ? (
+          <EmptyState
+            type="orders"
+            onPrimaryAction={() => {}}
+            primaryActionText="暂无操作"
+            showRefresh
+          />
+        ) : (
+          <Table dataSource={data} columns={columns} rowKey="id" loading={loading}
+            onRow={(r) => ({ onClick: () => setSelectedOrder(r), style: { cursor: 'pointer' } })}
+            pagination={{ current: page, onChange: setPage, total, pageSize: 20, showSizeChanger: false, showTotal: (t) => `共 ${t} 个订单` }}
+            size="middle" />
+        )}
       </Card>
 
       <Drawer title={<Space><Badge status={selectedOrder?.status === 'delivered' ? 'success' : 'processing'} />{selectedOrder?.orderNumber}</Space>}

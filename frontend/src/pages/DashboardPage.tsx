@@ -98,16 +98,16 @@ export default function DashboardPage() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const statCards: StatCardProps[] = [
-    { title: 'Products', value: stats.totalProducts, icon: <ShoppingOutlined />, gradient: 'linear-gradient(135deg, #1677ff 0%, #4096ff 100%)', loading, onClick: () => navigate('/products') },
-    { title: 'Orders', value: stats.totalOrders, icon: <ShoppingCartOutlined />, gradient: 'linear-gradient(135deg, #722ed1 0%, #9254de 100%)', loading, badge: stats.pendingOrders, onClick: () => navigate('/orders') },
-    { title: 'Customers', value: stats.totalCustomers, icon: <TeamOutlined />, gradient: 'linear-gradient(135deg, #13c2c2 0%, #36cfc9 100%)', loading, onClick: () => navigate('/customers') },
-    { title: 'Categories', value: stats.totalCategories, icon: <AppstoreOutlined />, gradient: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)', loading, onClick: () => navigate('/categories') },
+    { title: '商品总数', value: stats.totalProducts, icon: <ShoppingOutlined />, gradient: 'linear-gradient(135deg, #1677ff 0%, #4096ff 100%)', loading, onClick: () => navigate('/products') },
+    { title: '订单总数', value: stats.totalOrders, icon: <ShoppingCartOutlined />, gradient: 'linear-gradient(135deg, #722ed1 0%, #9254de 100%)', loading, badge: stats.pendingOrders, onClick: () => navigate('/orders') },
+    { title: '客户总数', value: stats.totalCustomers, icon: <TeamOutlined />, gradient: 'linear-gradient(135deg, #13c2c2 0%, #36cfc9 100%)', loading, onClick: () => navigate('/customers') },
+    { title: '分类总数', value: stats.totalCategories, icon: <AppstoreOutlined />, gradient: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)', loading, onClick: () => navigate('/categories') },
   ];
 
   const alertCards = [
-    { label: 'New RFQs', count: stats.newRfqs, color: '#ff4d4f', path: '/rfq-inbox', icon: <FileTextOutlined /> },
-    { label: 'New Contacts', count: stats.newContacts, color: '#fa8c16', path: '/contact-inbox', icon: <MailOutlined /> },
-    { label: 'Pending Orders', count: stats.pendingOrders, color: '#722ed1', path: '/orders', icon: <ShoppingCartOutlined /> },
+    { label: '新询价', count: stats.newRfqs, color: '#ff4d4f', path: '/rfq-inbox', icon: <FileTextOutlined /> },
+    { label: '新联系', count: stats.newContacts, color: '#fa8c16', path: '/contact-inbox', icon: <MailOutlined /> },
+    { label: '待处理订单', count: stats.pendingOrders, color: '#722ed1', path: '/orders', icon: <ShoppingCartOutlined /> },
   ];
 
   const statusColors: Record<string, string> = {
@@ -118,10 +118,10 @@ export default function DashboardPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <Title level={3} style={{ margin: 0 }}>Dashboard</Title>
-          <Text type="secondary">Welcome back. Here is your store overview.</Text>
+          <Title level={3} style={{ margin: 0 }}>仪表盘</Title>
+          <Text type="secondary">欢迎回来，这是您的店铺运营概览。</Text>
         </div>
-        <Button icon={<ReloadOutlined />} onClick={fetchData} loading={loading}>Refresh</Button>
+        <Button icon={<ReloadOutlined />} onClick={fetchData} loading={loading}>刷新</Button>
       </div>
 
       <Row gutter={[16, 16]}>
@@ -150,23 +150,23 @@ export default function DashboardPage() {
 
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
-          <Card title="Recent Orders" extra={<Button type="link" onClick={() => navigate('/orders')} icon={<ArrowRightOutlined />}>View All</Button>} style={{ borderRadius: 12 }}>
-            <Table dataSource={recentOrders} rowKey="id" loading={loading} pagination={false} size="small" locale={{ emptyText: 'No orders yet' }}
+          <Card title="最近订单" extra={<Button type="link" onClick={() => navigate('/orders')} icon={<ArrowRightOutlined />}>查看全部</Button>} style={{ borderRadius: 12 }}>
+            <Table dataSource={recentOrders} rowKey="id" loading={loading} pagination={false} size="small" locale={{ emptyText: '暂无订单' }}
               columns={[
-                { title: 'Order #', dataIndex: 'orderNumber', key: 'orderNumber', render: (v: string) => <Text strong>{v}</Text> },
-                { title: 'Customer', key: 'customer', render: (_: unknown, r: Order) => r.customer?.company || r.customer?.name || '—' },
-                { title: 'Total', key: 'total', width: 90, render: (_: unknown, r: Order) => `$${Number(r.total || 0).toFixed(2)}` },
-                { title: 'Status', dataIndex: 'status', key: 'status', width: 100, render: (v: string) => <Tag color={statusColors[v] || 'default'}>{v}</Tag> },
+                { title: '订单号', dataIndex: 'orderNumber', key: 'orderNumber', render: (v: string) => <Text strong>{v}</Text> },
+                { title: '客户', key: 'customer', render: (_: unknown, r: Order) => r.customer?.company || r.customer?.name || '—' },
+                { title: '金额', key: 'total', width: 90, render: (_: unknown, r: Order) => `$${Number(r.total || 0).toFixed(2)}` },
+                { title: '状态', dataIndex: 'status', key: 'status', width: 100, render: (v: string) => <Tag color={statusColors[v] || 'default'}>{v}</Tag> },
               ]} />
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Recent Products" extra={<Button type="link" onClick={() => navigate('/products')} icon={<ArrowRightOutlined />}>View All</Button>} style={{ borderRadius: 12 }}>
-            <Table dataSource={recentProducts} rowKey="id" loading={loading} pagination={false} size="small" locale={{ emptyText: 'No products yet' }}
+          <Card title="最近商品" extra={<Button type="link" onClick={() => navigate('/products')} icon={<ArrowRightOutlined />}>查看全部</Button>} style={{ borderRadius: 12 }}>
+            <Table dataSource={recentProducts} rowKey="id" loading={loading} pagination={false} size="small" locale={{ emptyText: '暂无商品' }}
               columns={[
-                { title: 'Name', dataIndex: 'name', key: 'name', ellipsis: true, render: (v: string, r: Product) => <a onClick={() => navigate(`/products/${r.id}/edit`)}>{v}</a> },
+                { title: '名称', dataIndex: 'name', key: 'name', ellipsis: true, render: (v: string, r: Product) => <a onClick={() => navigate(`/products/${r.id}/edit`)}>{v}</a> },
                 { title: 'SKU', dataIndex: 'sku', key: 'sku', width: 120 },
-                { title: 'Status', dataIndex: 'status', key: 'status', width: 90, render: (v: string) => <Tag color={v === 'published' ? 'green' : 'gold'}>{v || 'draft'}</Tag> },
+                { title: '状态', dataIndex: 'status', key: 'status', width: 90, render: (v: string) => <Tag color={v === 'published' ? 'green' : 'gold'}>{v || 'draft'}</Tag> },
               ]} />
           </Card>
         </Col>
@@ -174,12 +174,13 @@ export default function DashboardPage() {
 
       <Card style={{ marginTop: 24, borderRadius: 12, background: `linear-gradient(135deg, ${token.colorPrimaryBg} 0%, ${token.colorPrimaryBgHover} 100%)`, border: `1px solid ${token.colorPrimaryBorder}` }}>
         <Space direction="vertical" size={4}>
-          <Title level={5} style={{ margin: 0, color: token.colorPrimaryText }}>Quick Actions</Title>
+          <Title level={5} style={{ margin: 0, color: token.colorPrimaryText }}>快捷操作</Title>
           <Space wrap>
-            <Button type="primary" onClick={() => navigate('/products/new')}>Add Product</Button>
-            <Button onClick={() => navigate('/categories/new')}>Add Category</Button>
-            <Button onClick={() => navigate('/orders')}>View Orders</Button>
-            <Button onClick={() => navigate('/rfq-inbox')}>Check RFQ Inbox</Button>
+            <Button type="primary" onClick={() => navigate('/products/bulk-upload')}>批量上传</Button>
+            <Button onClick={() => navigate('/products/new')}>添加商品</Button>
+            <Button onClick={() => navigate('/categories/new')}>添加分类</Button>
+            <Button onClick={() => navigate('/orders')}>查看订单</Button>
+            <Button onClick={() => navigate('/rfq-inbox')}>查看询价</Button>
           </Space>
         </Space>
       </Card>

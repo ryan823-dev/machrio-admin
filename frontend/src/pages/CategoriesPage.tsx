@@ -4,6 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant
 import { useNavigate } from 'react-router-dom';
 import { getCategories, deleteCategory } from '../services/api';
 import type { Category } from '../types';
+import EmptyState from '../components/EmptyState';
 
 const { Title, Text } = Typography;
 
@@ -133,8 +134,8 @@ export default function CategoriesPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <Title level={3} style={{ margin: 0 }}>Categories</Title>
-          <Text type="secondary">Manage your product categories and hierarchy</Text>
+          <Title level={3} style={{ margin: 0 }}>类目管理</Title>
+          <Text type="secondary">管理产品分类和层级结构</Text>
         </div>
         <Button
           type="primary"
@@ -142,7 +143,7 @@ export default function CategoriesPage() {
           size="large"
           onClick={() => navigate('/categories/new')}
         >
-          Add Category
+          添加类目
         </Button>
       </div>
 
@@ -150,15 +151,15 @@ export default function CategoriesPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <Segmented
             options={[
-              { label: 'All', value: 'all' },
-              { label: 'Published', value: 'published' },
-              { label: 'Draft', value: 'draft' },
+              { label: '全部', value: 'all' },
+              { label: '已发布', value: 'published' },
+              { label: '草稿', value: 'draft' },
             ]}
             value={statusFilter}
             onChange={(v) => { setStatusFilter(v as string); setPage(1); }}
           />
           <Input
-            placeholder="Search categories..."
+            placeholder="搜索类目..."
             prefix={<SearchOutlined />}
             allowClear
             style={{ width: 280 }}
@@ -166,21 +167,30 @@ export default function CategoriesPage() {
           />
         </div>
 
-        <Table
-          dataSource={data}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            current: page,
-            onChange: setPage,
-            total,
-            pageSize: 20,
-            showSizeChanger: false,
-            showTotal: (t) => `${t} categories`,
-          }}
-          size="middle"
-        />
+        {data.length === 0 && !loading ? (
+          <EmptyState
+            type="categories"
+            onPrimaryAction={() => navigate('/categories/new')}
+            primaryActionText="添加第一个类目"
+            showRefresh
+          />
+        ) : (
+          <Table
+            dataSource={data}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              current: page,
+              onChange: setPage,
+              total,
+              pageSize: 20,
+              showSizeChanger: false,
+              showTotal: (t) => `共 ${t} 个类目`,
+            }}
+            size="middle"
+          />
+        )}
       </Card>
     </div>
   );

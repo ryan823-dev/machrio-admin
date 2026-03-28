@@ -17,6 +17,11 @@ import {
   BookOutlined,
   TranslationOutlined,
   LinkOutlined,
+  BankOutlined,
+  CarOutlined,
+  DollarOutlined,
+  CheckCircleOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 
@@ -24,34 +29,72 @@ const { Sider, Content, Header } = AntLayout;
 const { Text } = Typography;
 
 const menuItems = [
-  { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
+  { key: '/', icon: <DashboardOutlined />, label: '仪表盘' },
   { type: 'divider' as const },
-  { key: 'catalog', icon: <ShoppingOutlined />, label: 'Catalog', children: [
-    { key: '/products', icon: <ShoppingOutlined />, label: 'Products' },
-    { key: '/categories', icon: <AppstoreOutlined />, label: 'Categories' },
-    { key: '/brands', icon: <TagOutlined />, label: 'Brands' },
-  ]},
-  { key: 'sales', icon: <ShoppingCartOutlined />, label: 'Sales', children: [
-    { key: '/orders', icon: <ShoppingCartOutlined />, label: 'Orders' },
-    { key: '/customers', icon: <TeamOutlined />, label: 'Customers' },
-  ]},
-  { key: 'inbox', icon: <MailOutlined />, label: 'Inbox', children: [
-    { key: '/rfq-inbox', icon: <FileTextOutlined />, label: 'RFQ Inquiries' },
-    { key: '/contact-inbox', icon: <MailOutlined />, label: 'Contact Forms' },
-  ]},
+  { 
+    key: 'catalog', 
+    icon: <ShoppingOutlined />, 
+    label: '商品管理', 
+    children: [
+      { key: '/products', icon: <ShoppingOutlined />, label: '商品列表' },
+      { key: '/products/bulk-upload', icon: <UploadOutlined />, label: '批量上传' },
+      { key: '/categories', icon: <AppstoreOutlined />, label: '类目管理' },
+      { key: '/brands', icon: <TagOutlined />, label: '品牌管理' },
+    ]
+  },
+  { 
+    key: 'sales', 
+    icon: <ShoppingCartOutlined />, 
+    label: '订单管理', 
+    children: [
+      { key: '/orders', icon: <ShoppingCartOutlined />, label: '订单列表' },
+      { key: '/customers', icon: <TeamOutlined />, label: '客户管理' },
+    ]
+  },
+  { 
+    key: 'inbox', 
+    icon: <MailOutlined />, 
+    label: '消息中心', 
+    children: [
+      { key: '/rfq-inbox', icon: <FileTextOutlined />, label: '询价请求' },
+      { key: '/contact-inbox', icon: <MailOutlined />, label: '联系表单' },
+    ]
+  },
+  {
+    key: 'settings',
+    icon: <SettingOutlined />,
+    label: '系统设置',
+    children: [
+      { key: '/bank-accounts', icon: <BankOutlined />, label: '银行账户' },
+      { key: '/shipping-methods', icon: <CarOutlined />, label: '配送方式' },
+      { key: '/shipping-rates', icon: <DollarOutlined />, label: '运费模板' },
+      { key: '/free-shipping-rules', icon: <CheckCircleOutlined />, label: '包邮规则' },
+    ]
+  },
 ];
 
 const breadcrumbMap: Record<string, string> = {
-  '/': 'Dashboard',
-  '/categories': 'Categories',
-  '/categories/new': 'New Category',
-  '/products': 'Products',
-  '/products/new': 'New Product',
-  '/brands': 'Brands',
-  '/orders': 'Orders',
-  '/customers': 'Customers',
-  '/rfq-inbox': 'RFQ Inbox',
-  '/contact-inbox': 'Contact Inbox',
+  '/': '仪表盘',
+  '/categories': '类目管理',
+  '/categories/new': '新建分类',
+  '/categories/edit': '编辑分类',
+  '/products': '商品列表',
+  '/products/new': '新建商品',
+  '/products/edit': '编辑商品',
+  '/brands': '品牌管理',
+  '/brands/new': '新建品牌',
+  '/brands/edit': '编辑品牌',
+  '/orders': '订单列表',
+  '/orders/new': '新建订单',
+  '/customers': '客户管理',
+  '/customers/new': '新建客户',
+  '/customers/edit': '编辑客户',
+  '/rfq-inbox': '询价请求',
+  '/contact-inbox': '联系表单',
+  '/bank-accounts': '银行账户',
+  '/shipping-methods': '配送方式',
+  '/shipping-rates': '运费模板',
+  '/free-shipping-rules': '包邮规则',
 };
 
 export default function AppLayout() {
@@ -64,7 +107,7 @@ export default function AppLayout() {
   const selectedKey = '/' + (pathSnippets[0] || '');
 
   const breadcrumbItems = [
-    { title: 'Home', onClick: () => navigate('/'), className: 'breadcrumb-link' },
+    { title: '首页', onClick: () => navigate('/'), className: 'breadcrumb-link' },
     ...pathSnippets.map((_, index) => {
       const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
       const title = breadcrumbMap[url] || pathSnippets[index];
@@ -76,7 +119,9 @@ export default function AppLayout() {
   ];
 
   const userMenuItems = [
-    { key: 'settings', icon: <SettingOutlined />, label: 'Settings' },
+    { key: 'profile', icon: <UserOutlined />, label: '个人设置' },
+    { type: 'divider' as const },
+    { key: 'logout', icon: <SettingOutlined />, label: '退出登录' },
   ];
 
   return (

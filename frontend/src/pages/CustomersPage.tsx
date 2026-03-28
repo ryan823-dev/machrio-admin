@@ -3,6 +3,7 @@ import { Table, Tag, Input, Segmented, Typography, Card, Button, Space, Popconfi
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from '../services/api';
 import type { Customer } from '../types';
+import EmptyState from '../components/EmptyState';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -89,18 +90,27 @@ export default function CustomersPage() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-        <div><Title level={3} style={{ margin: 0 }}>Customers</Title><Text type="secondary">Manage your customer database</Text></div>
-        <Button type="primary" icon={<PlusOutlined />} size="large" onClick={() => openDrawer()}>Add Customer</Button>
+        <div><Title level={3} style={{ margin: 0 }}>客户管理</Title><Text type="secondary">管理您的客户数据库</Text></div>
+        <Button type="primary" icon={<PlusOutlined />} size="large" onClick={() => openDrawer()}>添加客户</Button>
       </div>
       <Card style={{ borderRadius: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-          <Segmented options={[{ label: 'All', value: 'all' }, { label: 'Direct', value: 'direct' }, { label: 'RFQ', value: 'rfq' }, { label: 'Contact', value: 'contact' }]}
+          <Segmented options={[{ label: '全部', value: 'all' }, { label: '直接下单', value: 'direct' }, { label: 'RFQ 询价', value: 'rfq' }, { label: '联系表单', value: 'contact' }]}
             value={sourceFilter} onChange={(v) => { setSourceFilter(v as string); setPage(1); }} />
-          <Input placeholder="Search..." prefix={<SearchOutlined />} allowClear style={{ width: 280 }}
+          <Input placeholder="搜索客户..." prefix={<SearchOutlined />} allowClear style={{ width: 280 }}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
-        <Table dataSource={data} columns={columns} rowKey="id" loading={loading}
-          pagination={{ current: page, onChange: setPage, total, pageSize: 20, showSizeChanger: false, showTotal: (t) => `${t} customers` }} size="middle" />
+        {data.length === 0 && !loading ? (
+          <EmptyState
+            type="customers"
+            onPrimaryAction={() => openDrawer()}
+            primaryActionText="添加第一个客户"
+            showRefresh
+          />
+        ) : (
+          <Table dataSource={data} columns={columns} rowKey="id" loading={loading}
+            pagination={{ current: page, onChange: setPage, total, pageSize: 20, showSizeChanger: false, showTotal: (t) => `共 ${t} 个客户` }} size="middle" />
+        )}
       </Card>
       <Drawer title={editingCustomer ? 'Edit Customer' : 'New Customer'} open={drawerOpen} onClose={() => setDrawerOpen(false)} width={520}
         extra={<Button type="primary" loading={saving} onClick={handleSave}>{editingCustomer ? 'Save' : 'Create'}</Button>}>
