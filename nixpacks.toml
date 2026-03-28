@@ -2,18 +2,15 @@
 # This tells Railway how to build and deploy the Java project
 
 [phases.build]
-# Set working directory to backend
-cwd = "backend/machrio-api"
-
 # Make gradlew executable and build
 cmds = [
-  "chmod +x gradlew",
-  "./gradlew build -x test"
+  "chmod +x backend/machrio-api/gradlew",
+  "cd backend/machrio-api && ./gradlew build -x test"
 ]
 
 [start]
 # Start the Spring Boot application
-cmd = "java -jar build/libs/*.jar"
+cmd = "cd backend/machrio-api && java -jar build/libs/*.jar"
 
 # Environment variables
 [variables]
