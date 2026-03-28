@@ -2,7 +2,6 @@ package com.machrio.admin.service;
 
 import com.machrio.admin.dto.CreateArticleRequest;
 import com.machrio.admin.dto.ArticleDTO;
-import com.machrio.admin.dto.ArticleContentDTO;
 import com.machrio.admin.dto.PageResponse;
 import com.machrio.admin.entity.Article;
 import com.machrio.admin.repository.ArticleRepository;
