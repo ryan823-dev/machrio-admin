@@ -1,8 +1,22 @@
-# Nixpacks 配置文件 - 用于 Railway 自动检测 Java 21
+# Nixpacks Configuration for Java/Spring Boot
+# This tells Railway how to build and deploy the Java project
+
 [phases.build]
+# Set working directory to backend
+cwd = "backend/machrio-api"
+
+# Make gradlew executable and build
 cmds = [
-  "cd backend/machrio-api && ./gradlew build -x test"
+  "chmod +x gradlew",
+  "./gradlew build -x test"
 ]
 
 [start]
-cmd = "cd backend/machrio-api && java -jar build/libs/*.jar"
+# Start the Spring Boot application
+cmd = "java -jar build/libs/*.jar"
+
+# Environment variables
+[variables]
+SPRING_PROFILES_ACTIVE = "production"
+SERVER_PORT = "8080"
+JAVA_TOOL_OPTIONS = "-Xms256m -Xmx512m -XX:+UseG1GC"
