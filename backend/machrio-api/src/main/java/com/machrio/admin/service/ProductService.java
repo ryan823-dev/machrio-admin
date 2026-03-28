@@ -44,6 +44,12 @@ public class ProductService {
         return PageResponse.from(productPage, dtos);
     }
 
+    public List<ProductDTO> getAllProductsList() {
+        return productRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     public ProductDTO getProductById(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found: " + id));
@@ -98,6 +104,8 @@ public class ProductService {
         product.setShortDescription(request.getShortDescription());
         product.setFullDescription(request.getFullDescription());
         product.setPrimaryCategoryId(request.getPrimaryCategoryId());
+        product.setBrand(request.getBrand());
+        product.setRelatedProducts(request.getRelatedProducts());
         product.setStatus(request.getStatus());
         product.setAvailability(request.getAvailability());
         product.setPurchaseMode(request.getPurchaseMode());
@@ -132,6 +140,8 @@ public class ProductService {
         dto.setShortDescription(product.getShortDescription());
         dto.setFullDescription(product.getFullDescription());
         dto.setPrimaryCategoryId(product.getPrimaryCategoryId());
+        dto.setBrand(product.getBrand());
+        dto.setRelatedProducts(product.getRelatedProducts());
         dto.setStatus(product.getStatus());
         dto.setAvailability(product.getAvailability());
         dto.setPurchaseMode(product.getPurchaseMode());

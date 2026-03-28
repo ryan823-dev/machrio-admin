@@ -36,5 +36,6 @@ public class CreateCategoryRequest {
     private Map<String, Object> meta;
     private Map<String, Object> customFields;
     private String heroImageId;
+    private String heroImageUrl;
     private String iconId;
 }

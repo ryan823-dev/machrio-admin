@@ -36,6 +36,7 @@ public class CategoryDTO {
     private Map<String, Object> meta;
     private Map<String, Object> customFields;
     private String heroImageId;
+    private String heroImageUrl;
     private String iconId;
     private String createdAt;
     private String updatedAt;

@@ -44,6 +44,13 @@ public class Product {
     private UUID primaryCategoryId;
 
     @Column(columnDefinition = "text")
+    private String brand;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "related_products", columnDefinition = "jsonb")
+    private List<String> relatedProducts;
+
+    @Column(columnDefinition = "text")
     private String status;
 
     @Column(columnDefinition = "text")

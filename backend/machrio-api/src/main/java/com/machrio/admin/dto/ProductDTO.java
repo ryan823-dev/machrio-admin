@@ -20,6 +20,8 @@ public class ProductDTO {
     private String shortDescription;
     private Map<String, Object> fullDescription;
     private UUID primaryCategoryId;
+    private String brand;
+    private List<String> relatedProducts;
     private String status;
     private String availability;
     private String purchaseMode;

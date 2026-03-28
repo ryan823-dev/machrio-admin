@@ -53,6 +53,13 @@ app:
   storage:
     blob-endpoint: ${APP_STORAGE_BLOB_ENDPOINT:https://blob.vercel-blob.com}
 
+# OSS Configuration (阿里云对象存储)
+oss:
+  endpoint: ${OSS_ENDPOINT:https://oss-cn-hangzhou.aliyuncs.com}
+  access-key-id: ${OSS_ACCESS_KEY_ID:}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+  bucket: ${OSS_BUCKET:vertax}
+
 # Logging
 logging:
   level:

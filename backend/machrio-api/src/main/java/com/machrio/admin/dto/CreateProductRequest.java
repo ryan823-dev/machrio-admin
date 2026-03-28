@@ -23,6 +23,8 @@ public class CreateProductRequest {
     private String shortDescription;
     private Map<String, Object> fullDescription;
     private UUID primaryCategoryId;
+    private String brand;
+    private List<String> relatedProducts;
 
     @NotBlank(message = "Status is required")
     private String status;

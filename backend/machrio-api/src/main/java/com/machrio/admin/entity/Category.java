@@ -99,6 +99,9 @@ public class Category {
     @Column(name = "hero_image_id", columnDefinition = "text")
     private String heroImageId;
 
+    @Column(name = "hero_image_url", columnDefinition = "text")
+    private String heroImageUrl;
+
     @Column(name = "icon_id", columnDefinition = "text")
     private String iconId;
 

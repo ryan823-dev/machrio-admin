@@ -32,6 +32,12 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	
+	// Alibaba Cloud OSS
+	implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.1'
+	implementation 'javax.xml.bind:jaxb-api:2.3.1'
+	implementation 'javax.activation:activation:1.1'
+	implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
 }
 
 tasks.named('test') {
