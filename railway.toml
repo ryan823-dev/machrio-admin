@@ -1,0 +1,21 @@
+# Railway Configuration for Java/Spring Boot
+# Using Nixpacks (Railway's native builder) - NO Dockerfile needed
+
+[build]
+# Remove Dockerfile reference - let Railway auto-detect Java/Gradle
+# builder = "NIXPACKS" is default for Java projects
+
+[deploy]
+startCommand = "java -jar app.jar"
+healthcheckPath = "/actuator/health"
+healthcheckTimeout = 300
+numReplicas = 1
+restartPolicyType = "ON_FAILURE"
+
+# Environment variables
+[deploy.envs]
+SPRING_PROFILES_ACTIVE = "production"
+SERVER_PORT = "8080"
+JAVA_TOOL_OPTIONS = "-Xms256m -Xmx512m -XX:+UseG1GC"
+SPRING_JPA_HIBERNATE_DDL_AUTO = "update"
+LOG_LEVEL_APP = "INFO"
