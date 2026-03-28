@@ -1,12 +1,11 @@
 # Railway Configuration for Java/Spring Boot
-# Using Nixpacks (Railway's native builder) - NO Dockerfile needed
+# Using Railpack (Railway's latest default builder)
 
 [build]
-# Remove Dockerfile reference - let Railway auto-detect Java/Gradle
-# builder = "NIXPACKS" is default for Java projects
+# Railpack will auto-detect Java/Gradle project
 
 [deploy]
-startCommand = "java -jar app.jar"
+startCommand = "cd backend/machrio-api && java -jar build/libs/*.jar"
 healthcheckPath = "/actuator/health"
 healthcheckTimeout = 300
 numReplicas = 1
