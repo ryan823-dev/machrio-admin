@@ -14,11 +14,11 @@ WORKDIR /app/frontend
 # 安装 pnpm
 RUN npm install -g pnpm
 
-# 复制前端 package 文件
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
+# 复制前端 package 文件（不复制 lock 文件，避免构建失败）
+COPY frontend/package.json ./
 
 # 安装依赖
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # 复制前端源代码
 COPY frontend/ ./
