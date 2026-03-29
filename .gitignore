@@ -11,6 +11,9 @@ frontend/node_modules/
 frontend/dist/
 frontend/.env
 
+# Backend - Local sensitive config
+backend/machrio-api/src/main/resources/application-local.yml
+
 # IDE
 .idea/
 *.iml
@@ -25,4 +28,5 @@ Thumbs.db
 backend.log
 
 .gradle
+.codebuddy
 pnpm-lock.yaml
