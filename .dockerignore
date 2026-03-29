@@ -1,0 +1,39 @@
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.docker/
+
+# Documentation
+*.md
+docs/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node modules (frontend)
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Build artifacts
+backend/**/build/
+backend/**/.gradle/
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local

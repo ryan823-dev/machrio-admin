@@ -1,0 +1,170 @@
+# =============================================
+# Machrio Admin - Docker Compose
+# =============================================
+# 用于本地测试和阿里云部署
+# =============================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------
+  # 后端 API 服务
+  # ---------------------------------------------
+  api:
+    build:
+      context: ./backend/machrio-api
+      dockerfile: Dockerfile
+    container_name: machrio-admin-api
+    ports:
+      - "8080:8080"
+    environment:
+      # 数据库配置
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/machrio_admin
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-machrio2024}
+      
+      # 应用配置
+      - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=production
+      
+      # JWT 配置（生产环境请修改）
+      - APP_JWT_SECRET=${JWT_SECRET:-your-super-secret-production-key-change-this}
+      
+      # CORS 配置（根据实际域名修改）
+      - APP_CORS_ALLOWED_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      
+      # OSS 配置（阿里云对象存储）
+      - OSS_ENDPOINT=${OSS_ENDPOINT:-https://oss-cn-hangzhou.aliyuncs.com}
+      - OSS_ACCESS_KEY_ID=${OSS_ACCESS_KEY_ID:-}
+      - OSS_ACCESS_KEY_SECRET=${OSS_ACCESS_KEY_SECRET:-}
+      - OSS_BUCKET=${OSS_BUCKET:-vertax}
+      
+      # 日志配置
+      - LOG_LEVEL_APP=INFO
+      - LOGGING_LEVEL_ROOT=INFO
+    
+    depends_on:
+      db:
+        condition: service_healthy
+    
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # 资源限制（防止内存溢出）
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    
+    # 日志配置
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # 重启策略
+    restart: unless-stopped
+    
+    # 网络配置
+    networks:
+      - machrio-network
+
+  # ---------------------------------------------
+  # PostgreSQL 数据库
+  # ---------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: machrio-admin-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=machrio_admin
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-machrio2024}
+      - TZ=Asia/Shanghai
+    volumes:
+      # 数据持久化
+      - postgres_data:/var/lib/postgresql/data
+      # 初始化 SQL 脚本（可选）
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d machrio_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - machrio-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ---------------------------------------------
+  # 前端服务（可选 - 生产环境通常使用 Nginx）
+  # ---------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: machrio-admin-frontend
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8080/api}
+    depends_on:
+      - api
+    networks:
+      - machrio-network
+    restart: unless-stopped
+
+# ---------------------------------------------
+# 数据卷
+# ---------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
+
+# ---------------------------------------------
+# 网络配置
+# ---------------------------------------------
+networks:
+  machrio-network:
+    driver: bridge
+
+# =============================================
+# 使用指南:
+# =============================================
+# 
+# 1. 本地开发测试:
+#    docker-compose up -d
+#
+# 2. 查看日志:
+#    docker-compose logs -f api
+#    docker-compose logs -f db
+#
+# 3. 停止服务:
+#    docker-compose down
+#
+# 4. 停止并删除数据卷（谨慎使用）:
+#    docker-compose down -v
+#
+# 5. 生产环境部署:
+#    - 修改 .env 文件配置生产环境变量
+#    - docker-compose -f docker-compose.yml up -d
+#
+# =============================================
