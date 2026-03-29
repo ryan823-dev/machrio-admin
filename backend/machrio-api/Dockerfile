@@ -12,22 +12,17 @@ FROM eclipse-temurin:21-jdk-alpine AS build
 # 设置工作目录
 WORKDIR /app
 
-# 安装 Git（Gradle 需要）
-RUN apk add --no-cache git
+# 安装 Git 和 Gradle
+RUN apk add --no-cache git gradle
 
-# 复制 Gradle 配置文件
+# 复制构建配置文件
 COPY build.gradle settings.gradle ./
-COPY gradle ./gradle
-COPY gradlew ./
-
-# 下载依赖（利用 Docker 缓存）
-RUN chmod +x gradlew && ./gradlew dependencies --no-daemon || true
 
 # 复制源代码
 COPY src ./src
 
 # 构建应用（跳过测试）
-RUN chmod +x gradlew && ./gradlew bootJar -x test --no-daemon
+RUN gradle bootJar -x test --no-daemon
 
 # ---------------------------------------------
 # 阶段 2: 运行阶段
@@ -51,21 +46,22 @@ COPY --from=build /app/build/libs/*.jar app.jar
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
-# 暴露端口
+# Railway 动态端口支持
+ENV PORT=8080
 EXPOSE 8080
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
-
-# JVM 参数优化
-ENV JAVA_TOOL_OPTIONS="-Xms512m -Xmx1g -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+# JVM 参数优化（Railway 免费版 512MB 内存限制）
+ENV JAVA_TOOL_OPTIONS="-Xms200m -Xmx400m -XX:+UseG1GC"
 
 # 激活生产环境配置
 ENV SPRING_PROFILES_ACTIVE=production
 
-# 启动应用
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-8080}/actuator/health || exit 1
+
+# 启动应用（支持 Railway 动态端口）
+ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT:-8080}"]
 
 # =============================================
 # 构建命令:

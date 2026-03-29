@@ -1,21 +1,19 @@
-# Railway Configuration for Java/Spring Boot
-# Using Railpack (Railway's latest default builder)
+# =============================================
+# Railway Configuration - Dockerfile Deploy
+# =============================================
+# 用于后端 Java 服务部署
+# =============================================
 
 [build]
-# Railpack will auto-detect Java/Gradle project
+# 指定使用 Dockerfile 构建
+builder = "DOCKERFILE"
+# Dockerfile 路径（相对于项目根目录）
+dockerfilePath = "backend/machrio-api/Dockerfile"
 
 [deploy]
-startCommand = "cd backend/machrio-api && java -jar build/libs/*.jar"
+# 健康检查路径
 healthcheckPath = "/actuator/health"
 healthcheckTimeout = 600
-numReplicas = 1
+# 重启策略
 restartPolicyType = "ON_FAILURE"
-
-# Environment variables
-[deploy.envs]
-SPRING_PROFILES_ACTIVE = "production"
-SERVER_PORT = "8080"
-JAVA_TOOL_OPTIONS = "-Xms256m -Xmx512m -XX:+UseG1GC"
-SPRING_JPA_HIBERNATE_DDL_AUTO = "update"
-LOG_LEVEL_APP = "DEBUG"
-LOGGING_LEVEL_ROOT = "INFO"
+restartPolicyMaxRetries = 3
