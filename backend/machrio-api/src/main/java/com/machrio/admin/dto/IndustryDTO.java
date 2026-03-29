@@ -29,20 +29,3 @@ public class IndustryDTO {
     private String createdAt;
     private String updatedAt;
 }
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-class IndustryFeatureDTO {
-    private String title;
-    private String description;
-    private String icon;
-}
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-class IndustryApplicationDTO {
-    private String title;
-    private String description;
-}

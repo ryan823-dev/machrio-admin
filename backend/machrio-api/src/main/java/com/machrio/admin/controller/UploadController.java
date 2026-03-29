@@ -43,9 +43,9 @@ public class UploadController {
             return ResponseEntity.ok(ApiResponse.success(result, "上传成功"));
         } catch (IOException e) {
             log.error("上传失败：{}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(ApiResponse.error(null, "上传失败：" + e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error("上传失败：" + e.getMessage()));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(null, e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -59,7 +59,7 @@ public class UploadController {
             return ResponseEntity.ok(ApiResponse.success(null, "删除成功"));
         } catch (Exception e) {
             log.error("删除失败：{}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(ApiResponse.error(null, "删除失败：" + e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error("删除失败：" + e.getMessage()));
         }
     }
 }

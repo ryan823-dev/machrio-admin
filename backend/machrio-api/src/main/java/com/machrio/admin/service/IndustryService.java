@@ -2,6 +2,8 @@ package com.machrio.admin.service;
 
 import com.machrio.admin.dto.CreateIndustryRequest;
 import com.machrio.admin.dto.IndustryDTO;
+import com.machrio.admin.dto.IndustryFeatureDTO;
+import com.machrio.admin.dto.IndustryApplicationDTO;
 import com.machrio.admin.dto.PageResponse;
 import com.machrio.admin.entity.Industry;
 import com.machrio.admin.repository.IndustryRepository;

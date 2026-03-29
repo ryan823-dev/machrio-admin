@@ -64,6 +64,19 @@ public class RfqSubmissionService {
     }
 
     @Transactional
+    public RfqSubmissionDTO updateStatusAndNotes(UUID id, String status, String notes) {
+        RfqSubmission submission = rfqSubmissionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("RFQ Submission not found: " + id));
+        if (status != null) {
+            submission.setStatus(status);
+        }
+        if (notes != null) {
+            submission.setNotes(notes);
+        }
+        return toDTO(rfqSubmissionRepository.save(submission));
+    }
+
+    @Transactional
     public void deleteSubmission(UUID id) {
         if (!rfqSubmissionRepository.existsById(id)) {
             throw new RuntimeException("RFQ Submission not found: " + id);

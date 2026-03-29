@@ -43,7 +43,7 @@ public class RedirectService {
     }
 
     public List<RedirectDTO> getActiveRedirects() {
-        return redirectRepository.findByActiveTrueOrderCreatedAtDesc().stream()
+        return redirectRepository.findByActiveTrueOrderByCreatedAtDesc().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }

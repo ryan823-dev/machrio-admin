@@ -2,6 +2,7 @@ package com.machrio.admin.controller;
 
 import com.machrio.admin.dto.BankAccountDTO;
 import com.machrio.admin.dto.CreateBankAccountRequest;
+import com.machrio.admin.dto.PageResponse;
 import com.machrio.admin.service.BankAccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,11 @@ public class BankAccountController {
     private BankAccountService bankAccountService;
 
     @GetMapping
-    public ResponseEntity<List<BankAccountDTO>> getAllBankAccounts(
-            @RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<PageResponse<BankAccountDTO>> getAllBankAccounts(
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) String search) {
-        List<BankAccountDTO> accounts = bankAccountService.getAllBankAccounts(page, pageSize, search);
+        PageResponse<BankAccountDTO> accounts = bankAccountService.getAllBankAccounts(page, pageSize, search);
         return ResponseEntity.ok(accounts);
     }
 

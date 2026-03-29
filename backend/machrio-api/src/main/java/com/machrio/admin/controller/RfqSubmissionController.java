@@ -24,13 +24,13 @@ public class RfqSubmissionController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) String status) {
-        PageResponse<RfqSubmissionDTO> result = rfqService.getAllRfqs(page, pageSize, status);
+        PageResponse<RfqSubmissionDTO> result = rfqService.getAllSubmissions(page, pageSize, status);
         return ResponseEntity.ok(ApiResponse.success(result, result.getTotalItems()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RfqSubmissionDTO>> getRfqById(@PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.success(rfqService.getRfqById(id)));
+        return ResponseEntity.ok(ApiResponse.success(rfqService.getSubmissionById(id)));
     }
 
     @PatchMapping("/{id}/status")
@@ -38,6 +38,6 @@ public class RfqSubmissionController {
             @PathVariable UUID id, @RequestBody Map<String, String> body) {
         String status = body.get("status");
         String notes = body.get("notes");
-        return ResponseEntity.ok(ApiResponse.success(rfqService.updateRfqStatus(id, status, notes), "RFQ updated"));
+        return ResponseEntity.ok(ApiResponse.success(rfqService.updateStatusAndNotes(id, status, notes), "RFQ updated"));
     }
 }

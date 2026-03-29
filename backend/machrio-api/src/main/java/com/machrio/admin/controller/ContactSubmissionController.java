@@ -25,13 +25,13 @@ public class ContactSubmissionController {
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search) {
-        PageResponse<ContactSubmissionDTO> result = contactService.getAllContacts(page, pageSize, status, search);
+        PageResponse<ContactSubmissionDTO> result = contactService.getAllSubmissions(page, pageSize, status, search);
         return ResponseEntity.ok(ApiResponse.success(result, result.getTotalItems()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ContactSubmissionDTO>> getContactById(@PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.success(contactService.getContactById(id)));
+        return ResponseEntity.ok(ApiResponse.success(contactService.getSubmissionById(id)));
     }
 
     @PatchMapping("/{id}/status")
@@ -39,6 +39,6 @@ public class ContactSubmissionController {
             @PathVariable UUID id, @RequestBody Map<String, String> body) {
         String status = body.get("status");
         String notes = body.get("notes");
-        return ResponseEntity.ok(ApiResponse.success(contactService.updateContactStatus(id, status, notes), "Contact updated"));
+        return ResponseEntity.ok(ApiResponse.success(contactService.updateStatusAndNotes(id, status, notes), "Contact updated"));
     }
 }

@@ -66,6 +66,19 @@ public class ContactSubmissionService {
     }
 
     @Transactional
+    public ContactSubmissionDTO updateStatusAndNotes(UUID id, String status, String notes) {
+        ContactSubmission submission = contactSubmissionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Contact Submission not found: " + id));
+        if (status != null) {
+            submission.setStatus(status);
+        }
+        if (notes != null) {
+            submission.setNotes(notes);
+        }
+        return toDTO(contactSubmissionRepository.save(submission));
+    }
+
+    @Transactional
     public void deleteSubmission(UUID id) {
         if (!contactSubmissionRepository.existsById(id)) {
             throw new RuntimeException("Contact Submission not found: " + id);

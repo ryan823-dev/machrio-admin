@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface RedirectRepository extends JpaRepository<Redirect, UUID> {
     Optional<Redirect> findBySourceUrl(String sourceUrl);
     boolean existsBySourceUrl(String sourceUrl);
-    List<Redirect> findByActiveTrueOrderCreatedAtDesc();
+    List<Redirect> findByActiveTrueOrderByCreatedAtDesc();
     @Query("SELECT r FROM Redirect r WHERE LOWER(r.sourceUrl) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(r.destinationUrl) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Redirect> searchByKeyword(String keyword, Pageable pageable);
 }

@@ -23,3 +23,6 @@ Thumbs.db
 # Logs
 *.log
 backend.log
+
+.gradle
+pnpm-lock.yaml

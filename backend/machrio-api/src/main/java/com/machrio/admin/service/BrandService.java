@@ -48,6 +48,12 @@ public class BrandService {
                 .collect(Collectors.toList());
     }
 
+    public List<BrandDTO> getAllBrandsList() {
+        return brandRepository.findAll(Sort.by("name").ascending()).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     public BrandDTO getBrandById(UUID id) {
         Brand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brand not found: " + id));

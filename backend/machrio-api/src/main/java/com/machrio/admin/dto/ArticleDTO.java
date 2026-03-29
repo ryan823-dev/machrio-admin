@@ -29,11 +29,3 @@ public class ArticleDTO {
     private String createdAt;
     private String updatedAt;
 }
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-class ArticleContentDTO {
-    private String html;
-    private String text;
-}
