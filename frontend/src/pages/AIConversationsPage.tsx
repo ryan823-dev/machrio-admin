@@ -1,19 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Table, Tag, Input, Button, Space, Drawer, Descriptions, 
-  Typography, Card, Badge, Timeline, Select, Divider, Tabs,
-  Empty, Avatar, Tooltip, Popconfirm, message, Rate, Statistic, Row, Col
+  Typography, Card, Badge, Timeline, Select, Divider,
+  Avatar, Tooltip, Popconfirm, message, Statistic, Row, Col
 } from 'antd';
 import { 
   SearchOutlined, EyeOutlined, DeleteOutlined, 
-  RobotOutlined, UserOutlined, CalendarOutlined,
+  RobotOutlined, UserOutlined,
   ThunderboltOutlined, CheckCircleOutlined, ClockCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { apiClient } from '../services/api';
 
-const { Title, Text, Paragraph } = Typography;
-const { TabPane } = Tabs;
+const { Text, Paragraph } = Typography;
 const { Option } = Select;
 
 interface Conversation {
@@ -200,7 +199,7 @@ const AIConversationsPage: React.FC = () => {
       width: 200,
       render: (interests) => (
         <Space wrap>
-          {interests?.slice(0, 2).map((item, idx) => (
+          {interests?.slice(0, 2).map((item: string, idx: number) => (
             <Tag key={idx} style={{ maxWidth: 150 }}>{item}</Tag>
           ))}
           {interests && interests.length > 2 && (

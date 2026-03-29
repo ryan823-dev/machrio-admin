@@ -1,15 +1,14 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Upload, message, Image, Button } from 'antd';
-import { UploadOutlined, DeleteOutlined, PictureOutlined } from '@ant-design/icons';
-import type { UploadFile, UploadProps } from 'antd';
+import { DeleteOutlined, PictureOutlined } from '@ant-design/icons';
+import type { UploadProps } from 'antd';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 interface ImageUploaderProps {
   value?: string;
   onChange?: (url: string) => void;
   folder?: string;
-  placeholder?: string;
   previewWidth?: number;
   previewHeight?: number;
 }
@@ -18,12 +17,10 @@ export default function ImageUploader({
   value = '',
   onChange,
   folder = 'uploads',
-  placeholder = '上传图片',
   previewWidth = 200,
   previewHeight = 200,
 }: ImageUploaderProps) {
   const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (file: File) => {
     setLoading(true);
@@ -62,6 +59,7 @@ export default function ImageUploader({
     accept: 'image/*',
     showUploadList: false,
     beforeUpload: handleUpload,
+    disabled: loading,
   };
 
   return (

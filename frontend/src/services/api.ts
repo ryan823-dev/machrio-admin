@@ -1,6 +1,6 @@
-import type { ApiResponse, PageResponse, Category, Product, Order, Customer, Brand, Industry, RfqSubmission, ContactSubmission, DashboardStats } from '../types';
+import type { ApiResponse, PageResponse, Category, Product, Order, Customer, Brand, Industry, RfqSubmission, ContactSubmission, DashboardStats, Redirect, GlossaryTerm, Article } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${url}`, {
@@ -126,3 +126,51 @@ export const updateContactStatus = (id: string, status: string, notes?: string) 
 
 // Dashboard
 export const getDashboardStats = () => request<ApiResponse<DashboardStats>>('/dashboard/stats');
+
+// Redirects
+export const getRedirects = (params: { page?: number; pageSize?: number; search?: string } = {}) => {
+  const q = new URLSearchParams();
+  q.set('page', String(params.page ?? 1));
+  q.set('pageSize', String(params.pageSize ?? 20));
+  if (params.search) q.set('search', params.search);
+  return request<ApiResponse<PageResponse<Redirect>>>(`/redirects?${q}`);
+};
+export const createRedirect = (data: Partial<Redirect>) => request<ApiResponse<Redirect>>('/redirects', { method: 'POST', body: JSON.stringify(data) });
+export const updateRedirect = (id: string, data: Partial<Redirect>) => request<ApiResponse<Redirect>>(`/redirects/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteRedirect = (id: string) => request<ApiResponse<void>>(`/redirects/${id}`, { method: 'DELETE' });
+
+// Industries
+export const getIndustries = (params: { page?: number; pageSize?: number; search?: string } = {}) => {
+  const q = new URLSearchParams();
+  q.set('page', String(params.page ?? 1));
+  q.set('pageSize', String(params.pageSize ?? 20));
+  if (params.search) q.set('search', params.search);
+  return request<ApiResponse<PageResponse<Industry>>>(`/industries?${q}`);
+};
+export const createIndustry = (data: Partial<Industry>) => request<ApiResponse<Industry>>('/industries', { method: 'POST', body: JSON.stringify(data) });
+export const updateIndustry = (id: string, data: Partial<Industry>) => request<ApiResponse<Industry>>(`/industries/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteIndustry = (id: string) => request<ApiResponse<void>>(`/industries/${id}`, { method: 'DELETE' });
+
+// Glossary Terms
+export const getGlossaryTerms = (params: { page?: number; pageSize?: number; search?: string } = {}) => {
+  const q = new URLSearchParams();
+  q.set('page', String(params.page ?? 1));
+  q.set('pageSize', String(params.pageSize ?? 20));
+  if (params.search) q.set('search', params.search);
+  return request<ApiResponse<PageResponse<GlossaryTerm>>>(`/glossary-terms?${q}`);
+};
+export const createGlossaryTerm = (data: Partial<GlossaryTerm>) => request<ApiResponse<GlossaryTerm>>('/glossary-terms', { method: 'POST', body: JSON.stringify(data) });
+export const updateGlossaryTerm = (id: string, data: Partial<GlossaryTerm>) => request<ApiResponse<GlossaryTerm>>(`/glossary-terms/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteGlossaryTerm = (id: string) => request<ApiResponse<void>>(`/glossary-terms/${id}`, { method: 'DELETE' });
+
+// Articles
+export const getArticles = (params: { page?: number; pageSize?: number; search?: string } = {}) => {
+  const q = new URLSearchParams();
+  q.set('page', String(params.page ?? 1));
+  q.set('pageSize', String(params.pageSize ?? 20));
+  if (params.search) q.set('search', params.search);
+  return request<ApiResponse<PageResponse<Article>>>(`/articles?${q}`);
+};
+export const createArticle = (data: Partial<Article>) => request<ApiResponse<Article>>('/articles', { method: 'POST', body: JSON.stringify(data) });
+export const updateArticle = (id: string, data: Partial<Article>) => request<ApiResponse<Article>>(`/articles/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteArticle = (id: string) => request<ApiResponse<void>>(`/articles/${id}`, { method: 'DELETE' });

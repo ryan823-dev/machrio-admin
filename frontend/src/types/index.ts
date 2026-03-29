@@ -23,6 +23,7 @@ export interface Category {
   meta?: Record<string, unknown>;
   customFields?: Record<string, unknown>;
   heroImageId?: string;
+  heroImageUrl?: string;
   iconId?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -62,8 +63,12 @@ export interface Product {
   additionalImageUrls?: string[];
   categories?: Array<Record<string, unknown>>;
   tags?: string[];
+  industries?: string[];
   metaTitle?: string;
   metaDescription?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
   focusKeyword?: string;
   sourceUrl?: string;
   shippingInfo?: Record<string, unknown>;
@@ -224,4 +229,48 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
   total: number;
+}
+
+export interface Redirect {
+  id: string;
+  sourceUrl: string;
+  destinationUrl: string;
+  type: 'Permanent' | 'Temporary';
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GlossaryTerm {
+  id: string;
+  term: string;
+  slug: string;
+  shortDefinition: string;
+  fullDescription?: string;
+  categorySlug?: string;
+  synonyms?: string[];
+  relatedTerms?: string[];
+  displayOrder?: number;
+  status?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  content?: { html?: string; text?: string } | string;
+  excerpt?: string;
+  category?: string;
+  tags?: string[];
+  status?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  author?: string;
+  publishedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import {
   Upload, Button, Card, Typography, Table, Tag, Progress,
   message, Space, Alert, Steps, Row, Col, Statistic, Divider,
-  Modal, Form, Input, InputNumber, Select
+  Select
 } from 'antd';
 import {
   InboxOutlined,
@@ -168,17 +168,6 @@ const BulkUploadProducts: React.FC = () => {
   const transformProductData = (data: ProductData) => {
     // 提取属性字段
     const attributes: any = {};
-    const attributeKeys = [
-      'Attribute 1 Name', 'Attribute 1 Value',
-      'Attribute 2 Name', 'Attribute 2 Value',
-      'Attribute 3 Name', 'Attribute 3 Value',
-      'Attribute 4 Name', 'Attribute 4 Value',
-      'Attribute 5 Name', 'Attribute 5 Value',
-      'Attribute 6 Name', 'Attribute 6 Value',
-      'Attribute 7 Name', 'Attribute 7 Value',
-      'Attribute 8 Name', 'Attribute 8 Value',
-      'Attribute 9 Name', 'Attribute 9 Value',
-    ];
 
     for (let i = 1; i <= 9; i++) {
       const nameKey = `Attribute ${i} Name`;
@@ -277,10 +266,10 @@ const BulkUploadProducts: React.FC = () => {
         try {
           const transformedData = transformProductData(product.data);
           
-          let response;
+          let response: { id?: string } | undefined;
           if (uploadMode === 'update') {
             // 更新模式：先查找现有产品
-            const existingProducts = await apiClient.get('/api/products', {
+            const existingProducts = await apiClient.get<Array<{ id: string }>>('/api/products', {
               sku: product.sku,
             });
             
@@ -393,7 +382,7 @@ const BulkUploadProducts: React.FC = () => {
       dataIndex: 'message',
       key: 'message',
       ellipsis: true,
-      render: (msg?: string, record: any) => msg || record.error || '-',
+      render: (msg: string | undefined, record: any) => msg || record.error || '-',
     },
   ];
 

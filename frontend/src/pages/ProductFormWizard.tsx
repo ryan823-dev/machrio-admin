@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Typography, Space, Divider, message, Spin, Image, Tag, Steps, theme } from 'antd';
+import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Typography, Space, Divider, message, Spin, Image, Tag, Steps } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getProduct, createProduct, updateProduct, getTopLevelCategories, getAllBrands, getAllProducts } from '../services/api';
@@ -36,7 +36,6 @@ export default function ProductFormWizard() {
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [fullDescriptionHtml, setFullDescriptionHtml] = useState<string>('');
   const [industries, setIndustries] = useState<string[]>([]);
-  const { token } = theme.useToken();
 
   const fetchData = useCallback(async () => {
     setLoading(true);

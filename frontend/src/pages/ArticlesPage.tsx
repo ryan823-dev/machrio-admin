@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Input, Typography, Card, Button, Space, Popconfirm, message, Drawer, Form, Switch, Divider, Row, Col, Select } from 'antd';
+const { TextArea } = Input;
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getArticles, createArticle, updateArticle, deleteArticle } from '../services/api';
 import type { Article } from '../types';
@@ -39,7 +40,7 @@ export default function ArticlesPage() {
   const openDrawer = (article?: Article) => {
     setEditingArticle(article || null);
     setSlugEdited(!!article);
-    setContentHtml(article?.content?.html || '');
+    setContentHtml(typeof article?.content === 'object' ? article?.content?.html || '' : '');
     form.resetFields();
     if (article) form.setFieldsValue(article);
     setDrawerOpen(true);

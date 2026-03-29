@@ -27,7 +27,6 @@ export default function ProductFormPage() {
   const [imageUrl, setImageUrl] = useState<string>('');
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [fullDescriptionHtml, setFullDescriptionHtml] = useState<string>('');
-  const [industries, setIndustries] = useState<string[]>([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -59,7 +58,6 @@ export default function ProductFormPage() {
         if (data.fullDescription && typeof data.fullDescription === 'object') {
           setFullDescriptionHtml((data.fullDescription as { html?: string }).html || '');
         }
-        if (data.industries) setIndustries(data.industries);
       }
     } catch {
       message.error('Failed to load data');

@@ -164,7 +164,7 @@ export const zhCN = {
   },
 
   // 消息相关
-  message: {
+  messageFields: {
     subject: '主题',
     from: '来自',
     receivedAt: '接收时间',

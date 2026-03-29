@@ -2,17 +2,16 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Table, Card, Tag, Space, Button, Drawer, Descriptions,
   Typography, Badge, Input, Select, Divider, message, Statistic, Row, Col,
-  Timeline, Avatar, Rate, Popconfirm, Form, DatePicker, InputNumber
+  Avatar, Form, Tooltip
 } from 'antd';
 import {
-  SearchOutlined, EyeOutlined, EditOutlined, CheckCircleOutlined,
-  UserOutlined, DollarOutlined, CalendarOutlined, EnvironmentOutlined
+  SearchOutlined, EyeOutlined, CheckCircleOutlined,
+  UserOutlined, DollarOutlined, EnvironmentOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { apiClient } from '../services/api';
-import dayjs from 'dayjs';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 
 interface CustomerRequirement {
@@ -92,15 +91,16 @@ const CustomerRequirementsPage: React.FC = () => {
     }
   };
 
-  const handleAssign = async (id: string, assignee: string) => {
-    try {
-      await apiClient.post(`/api/customer-requirements/${id}/assign`, { assignedTo: assignee });
-      message.success('Assigned successfully');
-      fetchData();
-    } catch (error: any) {
-      message.error('Assign failed');
-    }
-  };
+  // Reserved for future use
+  // const handleAssign = async (id: string, assignee: string) => {
+  //   try {
+  //     await apiClient.post(`/api/customer-requirements/${id}/assign`, { assignedTo: assignee });
+  //     message.success('Assigned successfully');
+  //     fetchData();
+  //   } catch (error: any) {
+  //     message.error('Assign failed');
+  //   }
+  // };
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -170,7 +170,7 @@ const CustomerRequirementsPage: React.FC = () => {
       width: 200,
       render: (names) => (
         <Space wrap>
-          {names?.slice(0, 2).map((name, idx) => (
+          {names?.slice(0, 2).map((name: string, idx: number) => (
             <Tag key={idx} color="blue">{name}</Tag>
           ))}
           {names && names.length > 2 && (
