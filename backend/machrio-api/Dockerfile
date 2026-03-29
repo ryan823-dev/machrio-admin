@@ -15,11 +15,11 @@ WORKDIR /app
 # 安装 Git 和 Gradle
 RUN apk add --no-cache git gradle
 
-# 复制构建配置文件
-COPY build.gradle settings.gradle ./
+# 复制构建配置文件（路径相对于项目根目录）
+COPY backend/machrio-api/build.gradle backend/machrio-api/settings.gradle ./
 
-# 复制源代码
-COPY src ./src
+# 复制源代码（路径相对于项目根目录）
+COPY backend/machrio-api/src ./src
 
 # 构建应用（跳过测试）
 RUN gradle bootJar -x test --no-daemon
