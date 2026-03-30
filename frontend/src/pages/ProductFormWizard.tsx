@@ -558,10 +558,10 @@ export default function ProductFormWizard() {
 
         <Card title="商品分类" style={{ borderRadius: 12 }}>
           <Form.Item label="商品分类" required>
-            <Space>
+            <Space wrap size="small">
               <Select
                 placeholder="一级分类"
-                style={{ width: 160 }}
+                style={{ width: 150 }}
                 value={selectedL1}
                 onChange={handleL1Change}
                 showSearch
@@ -570,7 +570,7 @@ export default function ProductFormWizard() {
               />
               <Select
                 placeholder="二级分类"
-                style={{ width: 160 }}
+                style={{ width: 150 }}
                 value={selectedL2}
                 onChange={handleL2Change}
                 disabled={!selectedL1}
@@ -580,7 +580,7 @@ export default function ProductFormWizard() {
               />
               <Select
                 placeholder="三级分类"
-                style={{ width: 160 }}
+                style={{ width: 150 }}
                 value={selectedL3}
                 onChange={handleL3Change}
                 disabled={!selectedL2}
