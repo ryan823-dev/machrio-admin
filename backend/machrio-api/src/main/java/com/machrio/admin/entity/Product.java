@@ -4,13 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -36,9 +32,8 @@ public class Product {
     @Column(name = "short_description", columnDefinition = "text")
     private String shortDescription;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "full_description", columnDefinition = "jsonb")
-    private Map<String, Object> fullDescription;
+    @Column(name = "full_description", columnDefinition = "text")
+    private String fullDescription;
 
     @Column(name = "primary_category_id")
     private UUID primaryCategoryId;
@@ -46,9 +41,8 @@ public class Product {
     @Column(columnDefinition = "text")
     private String brand;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "related_products", columnDefinition = "jsonb")
-    private List<String> relatedProducts;
+    @Column(name = "related_products", columnDefinition = "text")
+    private String relatedProducts;
 
     @Column(columnDefinition = "text")
     private String status;
@@ -74,36 +68,29 @@ public class Product {
     @Column(columnDefinition = "numeric")
     private BigDecimal weight;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Map<String, Object> pricing;
+    @Column(columnDefinition = "text")
+    private String pricing;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Map<String, Object> specifications;
+    @Column(columnDefinition = "text")
+    private String specifications;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private List<Map<String, Object>> faq;
+    @Column(columnDefinition = "text")
+    private String faq;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "images", columnDefinition = "jsonb")
+    @Column(name = "images", columnDefinition = "text")
     private String images;
 
     @Column(name = "external_image_url", columnDefinition = "text")
     private String externalImageUrl;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "additional_image_urls", columnDefinition = "jsonb")
-    private List<String> additionalImageUrls;
+    @Column(name = "additional_image_urls", columnDefinition = "text")
+    private String additionalImageUrls;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private List<Map<String, Object>> categories;
+    @Column(columnDefinition = "text")
+    private String categories;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private List<String> tags;
+    @Column(columnDefinition = "text")
+    private String tags;
 
     @Column(name = "meta_title", columnDefinition = "text")
     private String metaTitle;
@@ -117,13 +104,11 @@ public class Product {
     @Column(name = "source_url", columnDefinition = "text")
     private String sourceUrl;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "shipping_info", columnDefinition = "jsonb")
-    private Map<String, Object> shippingInfo;
+    @Column(name = "shipping_info", columnDefinition = "text")
+    private String shippingInfo;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Map<String, Object> meta;
+    @Column(columnDefinition = "text")
+    private String meta;
 
     @Column(name = "primary_image_id", columnDefinition = "text")
     private String primaryImageId;

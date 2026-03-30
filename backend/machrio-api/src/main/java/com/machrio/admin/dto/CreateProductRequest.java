@@ -1,12 +1,9 @@
 package com.machrio.admin.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -21,10 +18,10 @@ public class CreateProductRequest {
     private String sku;
 
     private String shortDescription;
-    private Map<String, Object> fullDescription;
+    private String fullDescription;
     private UUID primaryCategoryId;
     private String brand;
-    private List<String> relatedProducts;
+    private String relatedProducts;
 
     @NotBlank(message = "Status is required")
     private String status;
@@ -36,19 +33,19 @@ public class CreateProductRequest {
     private Integer packageQty;
     private String packageUnit;
     private BigDecimal weight;
-    private Map<String, Object> pricing;
-    private Map<String, Object> specifications;
-    private List<Map<String, Object>> faq;
+    private String pricing;
+    private String specifications;
+    private String faq;
     private String images;
     private String externalImageUrl;
-    private List<String> additionalImageUrls;
-    private List<Map<String, Object>> categories;
-    private List<String> tags;
+    private String additionalImageUrls;
+    private String categories;
+    private String tags;
     private String metaTitle;
     private String metaDescription;
     private String focusKeyword;
     private String sourceUrl;
-    private Map<String, Object> shippingInfo;
-    private Map<String, Object> meta;
+    private String shippingInfo;
+    private String meta;
     private String primaryImageId;
 }

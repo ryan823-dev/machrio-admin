@@ -153,9 +153,9 @@ public class ProductService {
         dto.setPricing(product.getPricing());
         dto.setSpecifications(product.getSpecifications());
         dto.setFaq(product.getFaq());
-        dto.setImages(product.getImages() != null ? product.getImages() : null);
+        dto.setImages(product.getImages());
         dto.setExternalImageUrl(product.getExternalImageUrl());
-        dto.setAdditionalImageUrls(product.getAdditionalImageUrls() != null ? product.getAdditionalImageUrls() : null);
+        dto.setAdditionalImageUrls(product.getAdditionalImageUrls());
         dto.setCategories(product.getCategories());
         dto.setTags(product.getTags());
         dto.setMetaTitle(product.getMetaTitle());
