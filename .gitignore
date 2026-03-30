@@ -13,6 +13,7 @@ frontend/.env
 
 # Backend - Local sensitive config
 backend/machrio-api/src/main/resources/application-local.yml
+backend/machrio-api/src/main/resources/static
 
 # IDE
 .idea/
