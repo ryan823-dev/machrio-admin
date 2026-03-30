@@ -581,28 +581,28 @@ export default function ProductFormWizard() {
           <Form.Item label="核心关键词" name="focusKeyword">
             <Input placeholder="用户搜索什么词时能找到这个商品？" />
           </Form.Item>
-          
+
           <Divider>Meta 标签</Divider>
-          
-          <Form.Item label="Meta 标题" name="seoTitle">
-            <Input 
-              placeholder="搜索引擎显示的标题（建议 60 字符以内）" 
-              showCount 
-              maxLength={60} 
+
+          <Form.Item label="Meta 标题" name="metaTitle">
+            <Input
+              placeholder="搜索引擎显示的标题（建议 60 字符以内）"
+              showCount
+              maxLength={60}
             />
           </Form.Item>
-          
-          <Form.Item label="Meta 描述" name="seoDescription">
-            <TextArea 
-              rows={3} 
-              placeholder="搜索引擎显示的描述（建议 120-160 字符）" 
-              showCount 
-              maxLength={160} 
+
+          <Form.Item label="Meta 描述" name="metaDescription">
+            <TextArea
+              rows={3}
+              placeholder="搜索引擎显示的描述（建议 120-160 字符）"
+              showCount
+              maxLength={160}
             />
           </Form.Item>
-          
-          <Form.Item label="Meta 关键词" name="seoKeywords">
-            <Input placeholder="keyword1, keyword2, keyword3" />
+
+          <Form.Item label="来源网址" name="sourceUrl">
+            <Input placeholder="https://..." />
           </Form.Item>
         </Card>
 

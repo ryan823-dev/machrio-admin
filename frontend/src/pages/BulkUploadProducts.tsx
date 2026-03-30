@@ -79,10 +79,10 @@ const BulkUploadProducts: React.FC = () => {
         'L1 Category': 'Abrasives',
         'L2 Category': 'Sanding Abrasives',
         'L3 Category': 'Sanding Discs',
-        'Short Description': 'This coarse grit aluminum oxide sanding disc is designed for aggressive material removal...',
-        'Full Description': 'Overview\nThis coarse grit aluminum oxide sanding disc is engineered for demanding industrial surface preparation...',
+        'Short Description': 'This coarse grit aluminum oxide sanding disc is designed for aggressive material removal on metal, wood, and plastic surfaces...',
+        'Full Description': 'Overview\nThis coarse grit aluminum oxide sanding disc is engineered for demanding industrial surface preparation tasks. The 3.94 inch diameter fits standard orbital sanders.\n\nFeatures\n- Coarse grit (60) for aggressive material removal\n- Aluminum oxide abrasive for long life\n- Compatible with orbital and rotary sanders',
         'Primary Image URL': 'https://cdn.machrio.com/products/images/HN6514_812abdceb.jpg',
-        'Additional Images': '',
+        'Additional Images': 'https://cdn.machrio.com/products/images/HN6514_alt1.jpg,https://cdn.machrio.com/products/images/HN6514_alt2.jpg',
         'Cost Price (CNY)': 5.29,
         'Selling Price (USD)': 159.99,
         'Min Order Qty': 1,
@@ -93,6 +93,34 @@ const BulkUploadProducts: React.FC = () => {
         'Availability': 'In Stock',
         'Status': 'Published',
         'Purchase Mode': 'Buy Online + RFQ',
+        'Attribute 1 Name': 'Grit',
+        'Attribute 1 Value': 'Coarse (60)',
+        'Attribute 2 Name': 'Diameter',
+        'Attribute 2 Value': '3.94 in',
+        'Attribute 3 Name': 'Material',
+        'Attribute 3 Value': 'Aluminum Oxide',
+        'Attribute 4 Name': 'Package Quantity',
+        'Attribute 4 Value': '100',
+        'Attribute 5 Name': '',
+        'Attribute 5 Value': '',
+        'Attribute 6 Name': '',
+        'Attribute 6 Value': '',
+        'Attribute 7 Name': '',
+        'Attribute 7 Value': '',
+        'Attribute 8 Name': '',
+        'Attribute 8 Value': '',
+        'Attribute 9 Name': '',
+        'Attribute 9 Value': '',
+        'Meta Title': 'Coarse Grit Aluminum Oxide Sanding Discs 3.94 inch | Machrio',
+        'Meta Description': 'Shop coarse grit aluminum oxide sanding discs for aggressive material removal. 3.94 inch diameter, 60 grit, package of 100.',
+        'Focus Keyword': 'aluminum oxide sanding discs',
+        'Source URL': 'https://www.example.com/product/HN6514',
+        'FAQ Question 1': 'What materials can these sanding discs be used on?',
+        'FAQ Answer 1': 'These aluminum oxide sanding discs are suitable for use on metal, wood, plastic, and composite materials.',
+        'FAQ Question 2': 'What grit is considered coarse?',
+        'FAQ Answer 2': 'Coarse grit typically ranges from 40-60 grit. These 60 grit discs are perfect for aggressive material removal.',
+        'FAQ Question 3': 'Are these compatible with all orbital sanders?',
+        'FAQ Answer 3': 'These 3.94 inch (100mm) sanding discs fit most standard 5-inch orbital sanders with hook and loop attachment systems.',
       }
     ];
 
@@ -166,14 +194,16 @@ const BulkUploadProducts: React.FC = () => {
 
   // 转换产品数据格式
   const transformProductData = (data: ProductData) => {
-    // 提取属性字段
-    const attributes: any = {};
-
+    // 提取规格属性字段
+    const specifications: Array<{ label: string; value: string; unit?: string }> = [];
     for (let i = 1; i <= 9; i++) {
       const nameKey = `Attribute ${i} Name`;
       const valueKey = `Attribute ${i} Value`;
       if (data[nameKey] && data[valueKey]) {
-        attributes[data[nameKey]] = data[valueKey];
+        specifications.push({
+          label: data[nameKey] as string,
+          value: data[valueKey] as string,
+        });
       }
     }
 
@@ -190,14 +220,6 @@ const BulkUploadProducts: React.FC = () => {
       }
     }
 
-    // 提取 SEO 信息
-    const meta = {
-      metaTitle: data['Meta Title'],
-      metaDescription: data['Meta Description'],
-      focusKeyword: data['Focus Keyword'],
-      sourceUrl: data['Source URL'],
-    };
-
     // 转换价格信息
     const pricing = {
       costPrice: data['Cost Price (CNY)'],
@@ -206,22 +228,22 @@ const BulkUploadProducts: React.FC = () => {
     };
 
     // 转换分类信息
-    const categories: any = [];
+    const categories: Array<{ name: string; level: number }> = [];
     if (data['L1 Category']) {
-      categories.push({ name: data['L1 Category'], level: 1 });
+      categories.push({ name: data['L1 Category'] as string, level: 1 });
     }
     if (data['L2 Category']) {
-      categories.push({ name: data['L2 Category'], level: 2 });
+      categories.push({ name: data['L2 Category'] as string, level: 2 });
     }
     if (data['L3 Category']) {
-      categories.push({ name: data['L3 Category'], level: 3 });
+      categories.push({ name: data['L3 Category'] as string, level: 3 });
     }
 
     return {
       sku: data.SKU,
       name: data.Name,
       shortDescription: data['Short Description'],
-      fullDescription: data['Full Description'] ? { content: data['Full Description'] } : undefined,
+      fullDescription: data['Full Description'] ? { html: data['Full Description'] } : undefined,
       primaryCategoryId: null, // 需要根据分类名称查找或创建
       brand: data.Brand,
       status: data.Status === 'Published' ? 'published' : 'draft',
@@ -233,11 +255,15 @@ const BulkUploadProducts: React.FC = () => {
       weight: data['Weight (kg)'],
       leadTime: data['Lead Time'],
       externalImageUrl: data['Primary Image URL'],
-      additionalImageUrls: data['Additional Images'] ? data['Additional Images'].split(',') : [],
+      additionalImageUrls: data['Additional Images'] ? (data['Additional Images'] as string).split(',') : [],
       pricing,
-      specifications: Object.keys(attributes).length > 0 ? attributes : undefined,
+      specifications: specifications.length > 0 ? specifications : undefined,
       faq: faq.length > 0 ? faq : undefined,
-      meta,
+      // SEO 字段直接设置，不嵌套
+      metaTitle: data['Meta Title'],
+      metaDescription: data['Meta Description'],
+      focusKeyword: data['Focus Keyword'],
+      sourceUrl: data['Source URL'],
       categories: categories.length > 0 ? categories : undefined,
     };
   };
@@ -269,21 +295,21 @@ const BulkUploadProducts: React.FC = () => {
           let response: { id?: string } | undefined;
           if (uploadMode === 'update') {
             // 更新模式：先查找现有产品
-            const existingProducts = await apiClient.get<Array<{ id: string }>>('/api/products', {
+            const existingProducts = await apiClient.get<Array<{ id: string }>>('/products', {
               sku: product.sku,
             });
-            
+
             if (existingProducts && existingProducts.length > 0) {
               response = await apiClient.put(
-                `/api/products/${existingProducts[0].id}`,
+                `/products/${existingProducts[0].id}`,
                 transformedData
               );
             } else {
-              response = await apiClient.post('/api/products', transformedData);
+              response = await apiClient.post('/products', transformedData);
             }
           } else {
             // 创建模式
-            response = await apiClient.post('/api/products', transformedData);
+            response = await apiClient.post('/products', transformedData);
           }
 
           setParsedProducts(prev => prev.map((p, idx) => 
