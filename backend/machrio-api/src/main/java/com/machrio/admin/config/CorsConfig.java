@@ -13,7 +13,7 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    @Value("${app.cors.allowed-origins}")
+    @Value("${app.cors.allowed-origins:}")
     private String allowedOrigins;
 
     @Bean
@@ -21,8 +21,14 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
 
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        config.setAllowedOriginPatterns(origins);
+        // 如果没有配置 allowedOrigins，允许所有来源
+        if (allowedOrigins == null || allowedOrigins.isBlank()) {
+            config.setAllowedOriginPatterns(List.of("*"));
+        } else {
+            List<String> origins = Arrays.asList(allowedOrigins.split(","));
+            config.setAllowedOriginPatterns(origins);
+        }
+        
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Total-Count"));
