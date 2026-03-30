@@ -4,7 +4,6 @@ import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined, Che
 import { useNavigate, useParams } from 'react-router-dom';
 import { getProduct, createProduct, updateProduct, getTopLevelCategories, getAllBrands, getProducts, uploadImage } from '../services/api';
 import type { Category, Brand, Product } from '../types';
-import type { UploadFile } from 'antd/es/upload/interface';
 import RichTextEditor from '../components/RichTextEditor';
 
 const { Title, Text } = Typography;
