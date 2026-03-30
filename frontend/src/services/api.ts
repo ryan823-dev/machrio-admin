@@ -45,12 +45,29 @@ export const updateCategory = (id: string, data: Partial<Category>) => request<A
 export const deleteCategory = (id: string) => request<ApiResponse<void>>(`/categories/${id}`, { method: 'DELETE' });
 
 // Products
-export const getProducts = (params: { page?: number; pageSize?: number; status?: string; search?: string } = {}) => {
+export const getProducts = (params: {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+  search?: string;
+  categoryId?: string;
+  brandId?: string;
+  availability?: string;
+  sku?: string;
+  startDate?: string;
+  endDate?: string;
+} = {}) => {
   const q = new URLSearchParams();
   q.set('page', String(params.page ?? 1));
   q.set('pageSize', String(params.pageSize ?? 20));
   if (params.status) q.set('status', params.status);
   if (params.search) q.set('search', params.search);
+  if (params.categoryId) q.set('categoryId', params.categoryId);
+  if (params.brandId) q.set('brandId', params.brandId);
+  if (params.availability) q.set('availability', params.availability);
+  if (params.sku) q.set('sku', params.sku);
+  if (params.startDate) q.set('startDate', params.startDate);
+  if (params.endDate) q.set('endDate', params.endDate);
   return request<ApiResponse<PageResponse<Product>>>(`/products?${q}`);
 };
 export const getAllProducts = () => request<ApiResponse<Product[]>>('/products/all');
