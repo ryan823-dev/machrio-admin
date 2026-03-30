@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Typography, Space, Divider, message, Spin, Image, Steps, Popconfirm, Tooltip } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined, CheckCircleOutlined, EyeOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Typography, Space, Divider, message, Spin, Image, Steps, Popconfirm, Tooltip, Upload } from 'antd';
+import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined, CheckCircleOutlined, EyeOutlined, UploadOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getProduct, createProduct, updateProduct, getTopLevelCategories, getAllBrands, getProducts } from '../services/api';
+import { getProduct, createProduct, updateProduct, getTopLevelCategories, getAllBrands, getProducts, uploadImage } from '../services/api';
 import type { Category, Brand, Product } from '../types';
+import type { UploadFile } from 'antd/es/upload/interface';
 import RichTextEditor from '../components/RichTextEditor';
 
 const { Title, Text } = Typography;
@@ -37,6 +38,37 @@ export default function ProductFormWizard() {
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [fullDescriptionHtml, setFullDescriptionHtml] = useState<string>('');
   const [industries, setIndustries] = useState<string[]>([]);
+  const [uploadingMainImage, setUploadingMainImage] = useState(false);
+  const [uploadingAdditionalImage, setUploadingAdditionalImage] = useState(false);
+
+  // 上传主图
+  const handleMainImageUpload = async (file: File) => {
+    setUploadingMainImage(true);
+    try {
+      const result = await uploadImage(file, 'products');
+      setImageUrl(result.url);
+      form.setFieldValue('externalImageUrl', result.url);
+      message.success('主图上传成功');
+    } catch (error) {
+      message.error('上传失败：' + (error instanceof Error ? error.message : '未知错误'));
+    } finally {
+      setUploadingMainImage(false);
+    }
+  };
+
+  // 上传附加图片
+  const handleAdditionalImageUpload = async (file: File) => {
+    setUploadingAdditionalImage(true);
+    try {
+      const result = await uploadImage(file, 'products');
+      setAdditionalImages([...additionalImages.filter(u => u), result.url]);
+      message.success('附加图片上传成功');
+    } catch (error) {
+      message.error('上传失败：' + (error instanceof Error ? error.message : '未知错误'));
+    } finally {
+      setUploadingAdditionalImage(false);
+    }
+  };
 
   // Search for related products
   const searchProducts = useCallback(async (searchText: string) => {
@@ -262,20 +294,22 @@ export default function ProductFormWizard() {
                       onClick={() => window.open(imageUrl, '_blank')}
                     />
                   </Tooltip>
-                  <Tooltip title="替换">
-                    <Button
-                      type="text"
-                      icon={<UploadOutlined />}
-                      style={{ color: '#fff' }}
-                      onClick={() => {
-                        const newUrl = prompt('请输入新的图片URL:', imageUrl);
-                        if (newUrl && newUrl.trim()) {
-                          setImageUrl(newUrl.trim());
-                          form.setFieldValue('externalImageUrl', newUrl.trim());
-                        }
-                      }}
-                    />
-                  </Tooltip>
+                  <Upload
+                    accept="image/*"
+                    showUploadList={false}
+                    beforeUpload={(file) => {
+                      handleMainImageUpload(file);
+                      return false;
+                    }}
+                  >
+                    <Tooltip title="替换">
+                      <Button
+                        type="text"
+                        icon={uploadingMainImage ? <LoadingOutlined /> : <UploadOutlined />}
+                        style={{ color: '#fff' }}
+                      />
+                    </Tooltip>
+                  </Upload>
                   <Popconfirm
                     title="确认删除主图？"
                     description="删除后需点击保存才会生效"
@@ -295,34 +329,35 @@ export default function ProductFormWizard() {
               </div>
             ) : (
               /* 空状态：上传区域 */
-              <div
-                onClick={() => {
-                  const url = prompt('请输入图片URL:');
-                  if (url && url.trim()) {
-                    setImageUrl(url.trim());
-                    form.setFieldValue('externalImageUrl', url.trim());
-                  }
+              <Upload.Dragger
+                accept="image/*"
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  handleMainImageUpload(file);
+                  return false;
                 }}
                 style={{
                   width: 200,
                   height: 200,
-                  border: '2px dashed #d9d9d9',
                   borderRadius: 8,
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'border-color 0.3s',
-                  background: '#fafafa'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#1890ff'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#d9d9d9'; }}
               >
-                <UploadOutlined style={{ fontSize: 32, color: '#999', marginBottom: 8 }} />
-                <Text type="secondary">点击上传主图</Text>
-                <Text type="secondary" style={{ fontSize: 12 }}>或输入图片URL</Text>
-              </div>
+                {uploadingMainImage ? (
+                  <div style={{ textAlign: 'center' }}>
+                    <LoadingOutlined style={{ fontSize: 32, color: '#1890ff' }} />
+                    <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>上传中...</Text>
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center' }}>
+                    <UploadOutlined style={{ fontSize: 32, color: '#999', marginBottom: 8 }} />
+                    <Text type="secondary">点击或拖拽上传主图</Text>
+                    <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>支持 JPG、PNG、GIF</Text>
+                  </div>
+                )}
+              </Upload.Dragger>
             )}
           </div>
 
@@ -389,19 +424,23 @@ export default function ProductFormWizard() {
             )}
 
             {/* 添加新图片按钮 */}
-            <Button
-              type="dashed"
-              onClick={() => {
-                const url = prompt('请输入附加图片URL:');
-                if (url && url.trim()) {
-                  setAdditionalImages([...additionalImages.filter(u => u), url.trim()]);
-                }
+            <Upload
+              accept="image/*"
+              showUploadList={false}
+              beforeUpload={(file) => {
+                handleAdditionalImageUpload(file);
+                return false;
               }}
-              icon={<PlusOutlined />}
-              block
             >
-              添加附加图片
-            </Button>
+              <Button
+                type="dashed"
+                icon={uploadingAdditionalImage ? <LoadingOutlined /> : <PlusOutlined />}
+                block
+                loading={uploadingAdditionalImage}
+              >
+                上传附加图片
+              </Button>
+            </Upload>
           </Space>
         </Card>
       </Col>

@@ -221,30 +221,36 @@ const BulkUploadProducts: React.FC = () => {
     }
 
     // 转换价格信息
-    const pricing = {
+    const pricingObj = {
       costPrice: data['Cost Price (CNY)'],
       basePrice: data['Selling Price (USD)'],
       currency: 'USD',
     };
 
     // 转换分类信息
-    const categories: Array<{ name: string; level: number }> = [];
+    const categoriesArr: Array<{ name: string; level: number }> = [];
     if (data['L1 Category']) {
-      categories.push({ name: data['L1 Category'] as string, level: 1 });
+      categoriesArr.push({ name: data['L1 Category'] as string, level: 1 });
     }
     if (data['L2 Category']) {
-      categories.push({ name: data['L2 Category'] as string, level: 2 });
+      categoriesArr.push({ name: data['L2 Category'] as string, level: 2 });
     }
     if (data['L3 Category']) {
-      categories.push({ name: data['L3 Category'] as string, level: 3 });
+      categoriesArr.push({ name: data['L3 Category'] as string, level: 3 });
     }
+
+    // 转换附加图片为逗号分隔字符串
+    const additionalImagesStr = data['Additional Images'] 
+      ? (data['Additional Images'] as string).split(',').map(s => s.trim()).filter(s => s).join(',')
+      : '';
 
     return {
       sku: data.SKU,
       name: data.Name,
       shortDescription: data['Short Description'],
-      fullDescription: data['Full Description'] ? { html: data['Full Description'] } : undefined,
-      primaryCategoryId: null, // 需要根据分类名称查找或创建
+      // 所有JSON字段转为字符串
+      fullDescription: data['Full Description'] ? JSON.stringify({ html: data['Full Description'] }) : undefined,
+      primaryCategoryId: null,
       brand: data.Brand,
       status: data.Status === 'Published' ? 'published' : 'draft',
       availability: data.Availability || 'in-stock',
@@ -255,16 +261,17 @@ const BulkUploadProducts: React.FC = () => {
       weight: data['Weight (kg)'],
       leadTime: data['Lead Time'],
       externalImageUrl: data['Primary Image URL'],
-      additionalImageUrls: data['Additional Images'] ? (data['Additional Images'] as string).split(',') : [],
-      pricing,
-      specifications: specifications.length > 0 ? specifications : undefined,
-      faq: faq.length > 0 ? faq : undefined,
-      // SEO 字段直接设置，不嵌套
+      additionalImageUrls: additionalImagesStr || undefined,
+      // JSON字符串
+      pricing: JSON.stringify(pricingObj),
+      specifications: specifications.length > 0 ? JSON.stringify(specifications) : undefined,
+      faq: faq.length > 0 ? JSON.stringify(faq) : undefined,
+      // SEO 字段
       metaTitle: data['Meta Title'],
       metaDescription: data['Meta Description'],
       focusKeyword: data['Focus Keyword'],
       sourceUrl: data['Source URL'],
-      categories: categories.length > 0 ? categories : undefined,
+      categories: categoriesArr.length > 0 ? JSON.stringify(categoriesArr) : undefined,
     };
   };
 

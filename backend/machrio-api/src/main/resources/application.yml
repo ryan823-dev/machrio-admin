@@ -54,7 +54,7 @@ server:
 # Application Configuration
 app:
   cors:
-    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:4173}
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:5176,http://localhost:4173}
   storage:
     blob-endpoint: ${APP_STORAGE_BLOB_ENDPOINT:https://blob.vercel-blob.com}
 
