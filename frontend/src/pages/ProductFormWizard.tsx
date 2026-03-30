@@ -340,7 +340,7 @@ export default function ProductFormWizard() {
             </Col>
           </Row>
           <Form.Item label="简短描述" name="shortDescription" rules={[{ required: true, message: '请输入简短描述' }]}>
-            <TextArea rows={3} placeholder="简要描述商品特点和用途（建议 50-100 字，有利于 SEO）" showCount maxLength={500} />
+            <TextArea rows={3} placeholder="简要描述商品特点和用途" showCount maxLength={5000} />
           </Form.Item>
         </Card>
 
