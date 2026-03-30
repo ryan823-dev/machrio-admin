@@ -31,3 +31,4 @@ backend.log
 .gradle
 .codebuddy
 pnpm-lock.yaml
+test/
