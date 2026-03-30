@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Typography, Space, Divider, message, Spin, Image, Tag, Steps } from 'antd';
+import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Typography, Space, Divider, message, Spin, Image, Steps } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getProduct, createProduct, updateProduct, getTopLevelCategories, getAllBrands, getAllProducts } from '../services/api';
+import { getProduct, createProduct, updateProduct, getTopLevelCategories, getAllBrands, getProducts } from '../services/api';
 import type { Category, Brand, Product } from '../types';
 import RichTextEditor from '../components/RichTextEditor';
 
@@ -30,44 +30,104 @@ export default function ProductFormWizard() {
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [relatedProductOptions, setRelatedProductOptions] = useState<{ value: string; label: string }[]>([]);
+  const [relatedProductsLoading, setRelatedProductsLoading] = useState(false);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [fullDescriptionHtml, setFullDescriptionHtml] = useState<string>('');
   const [industries, setIndustries] = useState<string[]>([]);
 
+  // Search for related products
+  const searchProducts = useCallback(async (searchText: string) => {
+    if (!searchText || searchText.length < 2) {
+      setRelatedProductOptions([]);
+      return;
+    }
+    setRelatedProductsLoading(true);
+    try {
+      const res = await getProducts({ page: 1, pageSize: 20, search: searchText });
+      const items = res.data?.items || [];
+      const options = items
+        .filter((p: Product) => p.id !== id)
+        .map((p: Product) => ({ value: p.id, label: `${p.name} (${p.sku})` }));
+      setRelatedProductOptions(options);
+    } catch {
+      // ignore
+    } finally {
+      setRelatedProductsLoading(false);
+    }
+  }, [id]);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [catRes, brandRes, prodRes] = await Promise.all([
+      const [catRes, brandRes] = await Promise.all([
         getTopLevelCategories(),
         getAllBrands().catch(() => ({ data: [] as Brand[] })),
-        getAllProducts().catch(() => ({ data: [] as Product[] })),
       ]);
       setCategories(catRes.data || []);
       setBrands((brandRes as { data: Brand[] }).data || []);
-      setAllProducts((prodRes as { data: Product[] }).data || []);
       if (id) {
         const res = await getProduct(id);
         const data = res.data;
+
+        // Helper to parse JSON strings
+        const parseJson = (val: unknown, fallback: unknown = null) => {
+          if (!val) return fallback;
+          try {
+            return typeof val === 'string' ? JSON.parse(val) : val;
+          } catch { return fallback; }
+        };
+
+        // Parse pricing, specifications, faq, tags from JSON strings
+        const pricing = parseJson(data.pricing, {});
+        const specifications = parseJson(data.specifications, []);
+        const faq = parseJson(data.faq, []);
+        const tags = parseJson(data.tags, []);
+
         const formData: Record<string, unknown> = {
           ...data,
-          'pricing.basePrice': data.pricing?.basePrice,
-          'pricing.compareAtPrice': data.pricing?.compareAtPrice,
-          'pricing.costPrice': data.pricing?.costPrice,
-          'pricing.currency': data.pricing?.currency || 'USD',
-          'pricing.priceUnit': data.pricing?.priceUnit,
-          'pricing.tieredPricing': data.pricing?.tieredPricing || [],
+          specifications,
+          faq,
+          tags,
+          'pricing.basePrice': pricing?.basePrice,
+          'pricing.compareAtPrice': pricing?.compareAtPrice,
+          'pricing.costPrice': pricing?.costPrice,
+          'pricing.currency': pricing?.currency || 'USD',
+          'pricing.priceUnit': pricing?.priceUnit,
+          'pricing.tieredPricing': pricing?.tieredPricing || [],
         };
         form.setFieldsValue(formData);
         setSlugManuallyEdited(true);
         if (data.externalImageUrl) setImageUrl(data.externalImageUrl);
-        if (data.additionalImageUrls) setAdditionalImages(data.additionalImageUrls);
-        if (data.fullDescription && typeof data.fullDescription === 'object') {
-          setFullDescriptionHtml((data.fullDescription as { html?: string }).html || '');
+        // Parse additionalImageUrls if it's a JSON string
+        if (data.additionalImageUrls) {
+          try {
+            const imgs = typeof data.additionalImageUrls === 'string'
+              ? JSON.parse(data.additionalImageUrls)
+              : data.additionalImageUrls;
+            setAdditionalImages(Array.isArray(imgs) ? imgs : []);
+          } catch { setAdditionalImages([]); }
         }
-        if (data.industries) setIndustries(data.industries);
+        // Parse fullDescription if it's a JSON string
+        if (data.fullDescription) {
+          try {
+            const desc = typeof data.fullDescription === 'string'
+              ? JSON.parse(data.fullDescription)
+              : data.fullDescription;
+            setFullDescriptionHtml((desc as { html?: string }).html || '');
+          } catch { setFullDescriptionHtml(''); }
+        }
+        // Parse industries if it's a JSON string
+        if (data.industries) {
+          try {
+            const ind = typeof data.industries === 'string'
+              ? JSON.parse(data.industries)
+              : data.industries;
+            setIndustries(Array.isArray(ind) ? ind : []);
+          } catch { setIndustries([]); }
+        }
       }
     } catch {
       message.error('加载数据失败');
@@ -551,21 +611,12 @@ export default function ProductFormWizard() {
             <Select
               mode="multiple"
               allowClear
-              placeholder="选择相关商品（互补品、替代品等）"
+              placeholder="输入关键词搜索相关商品..."
               showSearch
-              optionFilterProp="label"
-              options={allProducts
-                .filter((p: Product) => p.id !== id)
-                .map((p: Product) => ({ value: p.id, label: `${p.name} (${p.sku})` }))
-              }
-              tagRender={({ value, label, closable, onClose }) => {
-                const product = allProducts.find(p => p.id === value);
-                return (
-                  <Tag closable={closable} onClose={onClose} style={{ margin: '2px' }}>
-                    {product?.name || label}
-                  </Tag>
-                );
-              }}
+              onSearch={searchProducts}
+              loading={relatedProductsLoading}
+              filterOption={false}
+              options={relatedProductOptions}
             />
           </Form.Item>
         </Card>
