@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Typography, Space, Divider, message, Spin, Image, Steps, Popconfirm, Tooltip, Upload } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined, CheckCircleOutlined, EyeOutlined, UploadOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined, CheckCircleOutlined, EyeOutlined, UploadOutlined, DeleteOutlined, LoadingOutlined, RightOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getProduct, createProduct, updateProduct, getTopLevelCategories, getSubcategories, getCategory, getAllBrands, getProducts, uploadImage } from '../services/api';
 import type { Category, Brand, Product } from '../types';
@@ -558,7 +558,7 @@ export default function ProductFormWizard() {
 
         <Card title="商品分类" style={{ borderRadius: 12 }}>
           <Form.Item label="商品分类" required>
-            <Space wrap size="small">
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>
               <Select
                 placeholder="一级分类"
                 style={{ width: 150 }}
@@ -568,6 +568,7 @@ export default function ProductFormWizard() {
                 optionFilterProp="label"
                 options={l1Categories.map(c => ({ value: c.id, label: c.name }))}
               />
+              <RightOutlined style={{ color: selectedL1 ? '#1890ff' : '#d9d9d9', fontSize: 10 }} />
               <Select
                 placeholder="二级分类"
                 style={{ width: 150 }}
@@ -578,6 +579,7 @@ export default function ProductFormWizard() {
                 optionFilterProp="label"
                 options={l2Categories.map(c => ({ value: c.id, label: c.name }))}
               />
+              <RightOutlined style={{ color: selectedL2 ? '#1890ff' : '#d9d9d9', fontSize: 10 }} />
               <Select
                 placeholder="三级分类"
                 style={{ width: 150 }}
@@ -588,7 +590,7 @@ export default function ProductFormWizard() {
                 optionFilterProp="label"
                 options={l3Categories.map(c => ({ value: c.id, label: c.name }))}
               />
-            </Space>
+            </div>
             <Form.Item name="primaryCategoryId" noStyle rules={[{ required: true, message: '请选择商品分类' }]}>
               <Input type="hidden" />
             </Form.Item>
