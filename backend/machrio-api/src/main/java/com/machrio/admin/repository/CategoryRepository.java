@@ -31,4 +31,10 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
     @Query("SELECT COUNT(c) FROM Category c WHERE c.parentId IS NULL")
     long countTopLevelCategories();
+
+    // 根据名称和父ID查找分类（用于批量上传匹配分类）
+    Optional<Category> findByNameAndParentId(String name, UUID parentId);
+
+    // 根据名称查找顶级分类（parentId 为 null）
+    Optional<Category> findByNameAndParentIdIsNull(String name);
 }

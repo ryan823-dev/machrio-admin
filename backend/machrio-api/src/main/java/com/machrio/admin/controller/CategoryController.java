@@ -50,6 +50,20 @@ public class CategoryController {
         return ResponseEntity.ok(ApiResponse.success(category));
     }
 
+    /**
+     * 根据名称和父ID查找分类（用于批量上传匹配分类）
+     */
+    @GetMapping("/by-name")
+    public ResponseEntity<ApiResponse<CategoryDTO>> getByName(
+            @RequestParam String name,
+            @RequestParam(required = false) UUID parentId) {
+        CategoryDTO category = categoryService.findByNameAndParentId(name, parentId);
+        if (category == null) {
+            return ResponseEntity.ok(ApiResponse.success(null));
+        }
+        return ResponseEntity.ok(ApiResponse.success(category));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<CategoryDTO>> createCategory(
             @Valid @RequestBody CreateCategoryRequest request) {

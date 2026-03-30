@@ -62,6 +62,19 @@ public class CategoryService {
         return toDTO(category);
     }
 
+    /**
+     * 根据名称和父ID查找分类（用于批量上传匹配分类）
+     */
+    public CategoryDTO findByNameAndParentId(String name, UUID parentId) {
+        Category category;
+        if (parentId == null) {
+            category = categoryRepository.findByNameAndParentIdIsNull(name).orElse(null);
+        } else {
+            category = categoryRepository.findByNameAndParentId(name, parentId).orElse(null);
+        }
+        return category != null ? toDTO(category) : null;
+    }
+
     @Transactional
     public CategoryDTO createCategory(CreateCategoryRequest request) {
         Category category = new Category();

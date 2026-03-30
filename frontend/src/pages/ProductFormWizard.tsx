@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Typography, Space, Divider, message, Spin, Image, Steps, Popconfirm, Tooltip, Upload } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined, CheckCircleOutlined, EyeOutlined, UploadOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getProduct, createProduct, updateProduct, getTopLevelCategories, getAllBrands, getProducts, uploadImage } from '../services/api';
+import { getProduct, createProduct, updateProduct, getTopLevelCategories, getSubcategories, getCategory, getAllBrands, getProducts, uploadImage } from '../services/api';
 import type { Category, Brand, Product } from '../types';
 import RichTextEditor from '../components/RichTextEditor';
 
@@ -28,7 +28,6 @@ export default function ProductFormWizard() {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [relatedProductOptions, setRelatedProductOptions] = useState<{ value: string; label: string }[]>([]);
   const [relatedProductsLoading, setRelatedProductsLoading] = useState(false);
@@ -39,6 +38,14 @@ export default function ProductFormWizard() {
   const [industries, setIndustries] = useState<string[]>([]);
   const [uploadingMainImage, setUploadingMainImage] = useState(false);
   const [uploadingAdditionalImage, setUploadingAdditionalImage] = useState(false);
+
+  // 三级分类状态
+  const [l1Categories, setL1Categories] = useState<Category[]>([]);
+  const [l2Categories, setL2Categories] = useState<Category[]>([]);
+  const [l3Categories, setL3Categories] = useState<Category[]>([]);
+  const [selectedL1, setSelectedL1] = useState<string | null>(null);
+  const [selectedL2, setSelectedL2] = useState<string | null>(null);
+  const [selectedL3, setSelectedL3] = useState<string | null>(null);
 
   // 上传主图
   const handleMainImageUpload = async (file: File) => {
@@ -69,6 +76,40 @@ export default function ProductFormWizard() {
     }
   };
 
+  // 三级分类处理函数
+  const handleL1Change = async (l1Id: string) => {
+    setSelectedL1(l1Id);
+    setSelectedL2(null);
+    setSelectedL3(null);
+    setL3Categories([]);
+    form.setFieldValue('primaryCategoryId', l1Id);
+
+    try {
+      const res = await getSubcategories(l1Id);
+      setL2Categories(res.data || []);
+    } catch {
+      setL2Categories([]);
+    }
+  };
+
+  const handleL2Change = async (l2Id: string) => {
+    setSelectedL2(l2Id);
+    setSelectedL3(null);
+    form.setFieldValue('primaryCategoryId', l2Id);
+
+    try {
+      const res = await getSubcategories(l2Id);
+      setL3Categories(res.data || []);
+    } catch {
+      setL3Categories([]);
+    }
+  };
+
+  const handleL3Change = (l3Id: string) => {
+    setSelectedL3(l3Id);
+    form.setFieldValue('primaryCategoryId', l3Id);
+  };
+
   // Search for related products
   const searchProducts = useCallback(async (searchText: string) => {
     if (!searchText || searchText.length < 2) {
@@ -97,7 +138,7 @@ export default function ProductFormWizard() {
         getTopLevelCategories(),
         getAllBrands().catch(() => ({ data: [] as Brand[] })),
       ]);
-      setCategories(catRes.data || []);
+      setL1Categories(catRes.data || []); // L1 分类就是顶级分类
       setBrands((brandRes as { data: Brand[] }).data || []);
       if (id) {
         const res = await getProduct(id);
@@ -158,6 +199,52 @@ export default function ProductFormWizard() {
               : data.industries;
             setIndustries(Array.isArray(ind) ? ind : []);
           } catch { setIndustries([]); }
+        }
+
+        // 加载分类链
+        if (data.primaryCategoryId) {
+          try {
+            const primaryCat = await getCategory(data.primaryCategoryId);
+            if (primaryCat.data) {
+              const cat = primaryCat.data;
+              if (cat.level === 3 && cat.parentId) {
+                // L3 分类：加载完整的分类链
+                setSelectedL3(cat.id);
+                const l2Cat = await getCategory(cat.parentId);
+                if (l2Cat.data) {
+                  setSelectedL2(l2Cat.data.id);
+                  setL2Categories([l2Cat.data]);
+                  if (l2Cat.data.parentId) {
+                    const l1Cat = await getCategory(l2Cat.data.parentId);
+                    if (l1Cat.data) {
+                      setSelectedL1(l1Cat.data.id);
+                      // 加载 L1 下的所有 L2 分类
+                      const l2Res = await getSubcategories(l1Cat.data.id);
+                      setL2Categories(l2Res.data || []);
+                      // 加载 L2 下的所有 L3 分类
+                      const l3Res = await getSubcategories(l2Cat.data.id);
+                      setL3Categories(l3Res.data || []);
+                    }
+                  }
+                }
+              } else if (cat.level === 2 && cat.parentId) {
+                // L2 分类
+                setSelectedL2(cat.id);
+                const l1Cat = await getCategory(cat.parentId);
+                if (l1Cat.data) {
+                  setSelectedL1(l1Cat.data.id);
+                  // 加载 L1 下的所有 L2 分类
+                  const l2Res = await getSubcategories(l1Cat.data.id);
+                  setL2Categories(l2Res.data || []);
+                }
+              } else if (cat.level === 1) {
+                // L1 分类
+                setSelectedL1(cat.id);
+              }
+            }
+          } catch {
+            // 加载分类链失败，忽略
+          }
         }
       }
     } catch {
@@ -470,14 +557,41 @@ export default function ProductFormWizard() {
         </Card>
 
         <Card title="商品分类" style={{ borderRadius: 12 }}>
-          <Form.Item label="主分类" name="primaryCategoryId" rules={[{ required: true, message: '请选择商品分类' }]}>
-            <Select 
-              allowClear 
-              placeholder="选择商品分类" 
-              showSearch 
-              optionFilterProp="label"
-              options={categories.map(c => ({ value: c.id, label: c.name }))} 
-            />
+          <Form.Item label="商品分类" required>
+            <Space>
+              <Select
+                placeholder="一级分类"
+                style={{ width: 160 }}
+                value={selectedL1}
+                onChange={handleL1Change}
+                showSearch
+                optionFilterProp="label"
+                options={l1Categories.map(c => ({ value: c.id, label: c.name }))}
+              />
+              <Select
+                placeholder="二级分类"
+                style={{ width: 160 }}
+                value={selectedL2}
+                onChange={handleL2Change}
+                disabled={!selectedL1}
+                showSearch
+                optionFilterProp="label"
+                options={l2Categories.map(c => ({ value: c.id, label: c.name }))}
+              />
+              <Select
+                placeholder="三级分类"
+                style={{ width: 160 }}
+                value={selectedL3}
+                onChange={handleL3Change}
+                disabled={!selectedL2}
+                showSearch
+                optionFilterProp="label"
+                options={l3Categories.map(c => ({ value: c.id, label: c.name }))}
+              />
+            </Space>
+            <Form.Item name="primaryCategoryId" noStyle rules={[{ required: true, message: '请选择商品分类' }]}>
+              <Input type="hidden" />
+            </Form.Item>
           </Form.Item>
           <Form.Item label="品牌" name="brand">
             <Select 

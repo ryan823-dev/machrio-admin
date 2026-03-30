@@ -43,6 +43,11 @@ export const getSubcategories = (id: string) => request<ApiResponse<Category[]>>
 export const createCategory = (data: Partial<Category>) => request<ApiResponse<Category>>('/categories', { method: 'POST', body: JSON.stringify(data) });
 export const updateCategory = (id: string, data: Partial<Category>) => request<ApiResponse<Category>>(`/categories/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteCategory = (id: string) => request<ApiResponse<void>>(`/categories/${id}`, { method: 'DELETE' });
+export const findCategoryByName = (name: string, parentId?: string | null) => {
+  const params = new URLSearchParams({ name });
+  if (parentId) params.append('parentId', parentId);
+  return request<ApiResponse<Category | null>>(`/categories/by-name?${params}`);
+};
 
 // Products
 export const getProducts = (params: {

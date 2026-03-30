@@ -13,7 +13,7 @@ import {
   FileExcelOutlined,
   DownloadOutlined
 } from '@ant-design/icons';
-import { apiClient } from '../services/api';
+import { apiClient, findCategoryByName, createCategory } from '../services/api';
 import * as XLSX from 'xlsx';
 
 const { Title, Text, Paragraph } = Typography;
@@ -192,8 +192,8 @@ const BulkUploadProducts: React.FC = () => {
     },
   };
 
-  // 转换产品数据格式
-  const transformProductData = (data: ProductData) => {
+  // 转换产品数据格式（异步，支持分类查找）
+  const transformProductData = async (data: ProductData) => {
     // 提取规格属性字段
     const specifications: Array<{ label: string; value: string; unit?: string }> = [];
     for (let i = 1; i <= 9; i++) {
@@ -227,16 +227,95 @@ const BulkUploadProducts: React.FC = () => {
       currency: 'USD',
     };
 
-    // 转换分类信息
+    // 生成 slug 函数
+    const slugify = (text: string): string => {
+      return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    };
+
+    // 匹配或创建分类
+    let primaryCategoryId: string | null = null;
+    let l1Id: string | null = null;
+    let l2Id: string | null = null;
+    
     const categoriesArr: Array<{ name: string; level: number }> = [];
+
+    // 处理 L1 分类
     if (data['L1 Category']) {
-      categoriesArr.push({ name: data['L1 Category'] as string, level: 1 });
+      const l1Name = data['L1 Category'] as string;
+      categoriesArr.push({ name: l1Name, level: 1 });
+      
+      try {
+        const l1Cat = await findCategoryByName(l1Name, null);
+        if (l1Cat.data) {
+          l1Id = l1Cat.data.id;
+        } else {
+          // 创建新分类
+          const newCat = await createCategory({
+            name: l1Name,
+            slug: slugify(l1Name),
+            level: 1,
+            status: 'published'
+          });
+          l1Id = newCat.data?.id || null;
+        }
+      } catch {
+        // 忽略错误
+      }
     }
-    if (data['L2 Category']) {
-      categoriesArr.push({ name: data['L2 Category'] as string, level: 2 });
+
+    // 处理 L2 分类
+    if (data['L2 Category'] && l1Id) {
+      const l2Name = data['L2 Category'] as string;
+      categoriesArr.push({ name: l2Name, level: 2 });
+      
+      try {
+        const l2Cat = await findCategoryByName(l2Name, l1Id);
+        if (l2Cat.data) {
+          l2Id = l2Cat.data.id;
+        } else {
+          // 创建新分类
+          const newCat = await createCategory({
+            name: l2Name,
+            slug: slugify(l2Name),
+            level: 2,
+            parentId: l1Id,
+            status: 'published'
+          });
+          l2Id = newCat.data?.id || null;
+        }
+      } catch {
+        // 忽略错误
+      }
     }
-    if (data['L3 Category']) {
-      categoriesArr.push({ name: data['L3 Category'] as string, level: 3 });
+
+    // 处理 L3 分类
+    if (data['L3 Category'] && l2Id) {
+      const l3Name = data['L3 Category'] as string;
+      categoriesArr.push({ name: l3Name, level: 3 });
+      
+      try {
+        const l3Cat = await findCategoryByName(l3Name, l2Id);
+        if (l3Cat.data) {
+          primaryCategoryId = l3Cat.data.id;
+        } else {
+          // 创建新分类
+          const newCat = await createCategory({
+            name: l3Name,
+            slug: slugify(l3Name),
+            level: 3,
+            parentId: l2Id,
+            status: 'published'
+          });
+          primaryCategoryId = newCat.data?.id || null;
+        }
+      } catch {
+        // 忽略错误
+      }
+    }
+
+    // 如果没有 L3，则使用 L2 或 L1 作为主分类
+    if (!primaryCategoryId) {
+      primaryCategoryId = l2Id || l1Id;
     }
 
     // 转换附加图片为逗号分隔字符串
@@ -247,10 +326,10 @@ const BulkUploadProducts: React.FC = () => {
     return {
       sku: data.SKU,
       name: data.Name,
+      slug: slugify(data.Name || data.SKU || 'product'),
       shortDescription: data['Short Description'],
-      // 所有JSON字段转为字符串
       fullDescription: data['Full Description'] ? JSON.stringify({ html: data['Full Description'] }) : undefined,
-      primaryCategoryId: null,
+      primaryCategoryId,
       brand: data.Brand,
       status: data.Status === 'Published' ? 'published' : 'draft',
       availability: data.Availability || 'in-stock',
@@ -262,11 +341,9 @@ const BulkUploadProducts: React.FC = () => {
       leadTime: data['Lead Time'],
       externalImageUrl: data['Primary Image URL'],
       additionalImageUrls: additionalImagesStr || undefined,
-      // JSON字符串
       pricing: JSON.stringify(pricingObj),
       specifications: specifications.length > 0 ? JSON.stringify(specifications) : undefined,
       faq: faq.length > 0 ? JSON.stringify(faq) : undefined,
-      // SEO 字段
       metaTitle: data['Meta Title'],
       metaDescription: data['Meta Description'],
       focusKeyword: data['Focus Keyword'],
@@ -297,7 +374,7 @@ const BulkUploadProducts: React.FC = () => {
         ));
 
         try {
-          const transformedData = transformProductData(product.data);
+          const transformedData = await transformProductData(product.data);
           
           let response: { id?: string } | undefined;
           if (uploadMode === 'update') {
