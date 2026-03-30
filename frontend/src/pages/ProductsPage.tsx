@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Table, Button, Tag, Input, Space, Popconfirm, message, Segmented, Typography, Card, Avatar, Select, DatePicker, Row, Col, Form } from 'antd';
+import { Table, Button, Tag, Input, Space, Popconfirm, message, Segmented, Typography, Card, Avatar, Select, DatePicker, Row, Col, Form, Tooltip } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, ShoppingOutlined, ReloadOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { getProducts, deleteProduct, getTopLevelCategories, getAllBrands } from '../services/api';
@@ -123,12 +123,16 @@ export default function ProductsPage() {
       key: 'name',
       ellipsis: true,
       render: (v: string, r: Product) => (
-        <div>
-          <a onClick={() => navigate(`/products/${r.id}/edit`)} style={{ fontWeight: 500 }}>{v}</a>
-          {r.shortDescription && (
-            <div><Text type="secondary" style={{ fontSize: 12 }} ellipsis>{r.shortDescription}</Text></div>
-          )}
-        </div>
+        <Tooltip title={v} placement="topLeft">
+          <div>
+            <a onClick={() => navigate(`/products/${r.id}/edit`)} style={{ fontWeight: 500 }}>{v}</a>
+            {r.shortDescription && (
+              <Tooltip title={r.shortDescription} placement="topLeft">
+                <div><Text type="secondary" style={{ fontSize: 12 }} ellipsis>{r.shortDescription}</Text></div>
+              </Tooltip>
+            )}
+          </div>
+        </Tooltip>
       ),
     },
     {
@@ -136,14 +140,38 @@ export default function ProductsPage() {
       dataIndex: 'sku',
       key: 'sku',
       width: 140,
-      render: (v: string) => <Text code>{v}</Text>,
+      render: (v: string) => (
+        <Tooltip title={v} placement="topLeft">
+          <Text code>{v}</Text>
+        </Tooltip>
+      ),
     },
     {
       title: 'Category',
-      dataIndex: 'primaryCategoryId',
       key: 'category',
-      width: 150,
-      render: (v: string) => v || <Text type="secondary">—</Text>,
+      width: 180,
+      ellipsis: true,
+      render: (_: unknown, r: Product) => {
+        // 解析 categories 字段
+        let categoryPath = '';
+        if (r.categories && Array.isArray(r.categories)) {
+          // 按 level 排序后拼接名称
+          const sortedCategories = [...r.categories]
+            .filter(c => c && c.name)
+            .sort((a, b) => ((a.level as number) || 1) - ((b.level as number) || 1));
+          categoryPath = sortedCategories.map(c => c.name).join(' > ');
+        }
+        
+        if (!categoryPath) {
+          return <Text type="secondary">—</Text>;
+        }
+        
+        return (
+          <Tooltip title={categoryPath} placement="topLeft">
+            <Text ellipsis style={{ maxWidth: 170 }}>{categoryPath}</Text>
+          </Tooltip>
+        );
+      },
     },
     {
       title: 'Price',
