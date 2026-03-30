@@ -152,19 +152,28 @@ export default function ProductsPage() {
       width: 180,
       ellipsis: true,
       render: (_: unknown, r: Product) => {
-        // 解析 categories 字段
-        let categoryPath = '';
-        if (r.categories && Array.isArray(r.categories)) {
-          // 按 level 排序后拼接名称
-          const sortedCategories = [...r.categories]
-            .filter(c => c && c.name)
-            .sort((a, b) => ((a.level as number) || 1) - ((b.level as number) || 1));
-          categoryPath = sortedCategories.map(c => c.name).join(' > ');
+        // 解析 categories 字段（可能是 JSON 字符串）
+        let categoriesArr: Array<{ name: string; level: number }> = [];
+        if (r.categories) {
+          try {
+            const parsed = typeof r.categories === 'string' ? JSON.parse(r.categories) : r.categories;
+            if (Array.isArray(parsed)) {
+              categoriesArr = parsed;
+            }
+          } catch {
+            // 解析失败
+          }
         }
         
-        if (!categoryPath) {
+        if (categoriesArr.length === 0) {
           return <Text type="secondary">—</Text>;
         }
+        
+        // 按 level 排序后拼接名称
+        const sortedCategories = [...categoriesArr]
+          .filter(c => c && c.name)
+          .sort((a, b) => (a.level || 1) - (b.level || 1));
+        const categoryPath = sortedCategories.map(c => c.name).join(' > ');
         
         return (
           <Tooltip title={categoryPath} placement="topLeft">
@@ -178,12 +187,22 @@ export default function ProductsPage() {
       key: 'price',
       width: 100,
       render: (_: unknown, r: Product) => {
-        const price = r.pricing?.basePrice;
-        return price != null ? (
-          <Text strong>${Number(price).toFixed(2)}</Text>
-        ) : (
-          <Text type="secondary">—</Text>
-        );
+        // 解析 pricing 字段（可能是 JSON 字符串）
+        let pricing: { basePrice?: number } | null = null;
+        if (r.pricing) {
+          try {
+            pricing = typeof r.pricing === 'string' ? JSON.parse(r.pricing) : r.pricing;
+          } catch {
+            // 解析失败
+          }
+        }
+        
+        const price = pricing?.basePrice;
+        if (price == null) {
+          return <Text type="secondary">—</Text>;
+        }
+        
+        return <Text strong>${Number(price).toFixed(2)}</Text>;
       },
     },
     {
