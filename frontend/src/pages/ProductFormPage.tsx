@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Tabs, Typography, Space, Divider, message, Spin, Image, Tag } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getProduct, createProduct, updateProduct, getTopLevelCategories, getAllBrands, getAllProducts } from '../services/api';
+import { getProduct, createProduct, updateProduct, getTopLevelCategories, getAllBrands, getProducts } from '../services/api';
 import type { Category, Brand, Product } from '../types';
 import RichTextEditor from '../components/RichTextEditor';
 
@@ -22,23 +22,43 @@ export default function ProductFormPage() {
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [relatedProductOptions, setRelatedProductOptions] = useState<{ value: string; label: string }[]>([]);
+  const [relatedProductsLoading, setRelatedProductsLoading] = useState(false);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [fullDescriptionHtml, setFullDescriptionHtml] = useState<string>('');
 
+  // Search for related products
+  const searchProducts = useCallback(async (searchText: string) => {
+    if (!searchText || searchText.length < 2) {
+      setRelatedProductOptions([]);
+      return;
+    }
+    setRelatedProductsLoading(true);
+    try {
+      const res = await getProducts({ page: 1, pageSize: 20, search: searchText });
+      const items = res.data?.items || [];
+      const options = items
+        .filter((p: Product) => p.id !== id)
+        .map((p: Product) => ({ value: p.id, label: `${p.name} (${p.sku})` }));
+      setRelatedProductOptions(options);
+    } catch {
+      // ignore
+    } finally {
+      setRelatedProductsLoading(false);
+    }
+  }, [id]);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [catRes, brandRes, prodRes] = await Promise.all([
+      const [catRes, brandRes] = await Promise.all([
         getTopLevelCategories(),
         getAllBrands().catch(() => ({ data: [] as Brand[] })),
-        getAllProducts().catch(() => ({ data: [] as Product[] })),
       ]);
       setCategories(catRes.data || []);
       setBrands((brandRes as { data: Brand[] }).data || []);
-      setAllProducts((prodRes as { data: Product[] }).data || []);
       if (id) {
         const res = await getProduct(id);
         const data = res.data;
@@ -194,18 +214,12 @@ export default function ProductFormPage() {
                     <Select
                       mode="multiple"
                       allowClear
-                      placeholder="Select related products"
+                      placeholder="Type to search products..."
                       showSearch
-                      optionFilterProp="label"
-                      options={allProducts.filter((p: Product) => p.id !== id).map((p: Product) => ({ value: p.id, label: `${p.name} (${p.sku})` }))}
-                      tagRender={({ value, label, closable, onClose }) => {
-                        const product = allProducts.find(p => p.id === value);
-                        return (
-                          <Tag closable={closable} onClose={onClose} style={{ margin: '2px' }}>
-                            {product?.name || label}
-                          </Tag>
-                        );
-                      }}
+                      onSearch={searchProducts}
+                      loading={relatedProductsLoading}
+                      filterOption={false}
+                      options={relatedProductOptions}
                     />
                   </Form.Item>
                 </Card>
