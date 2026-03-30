@@ -43,3 +43,12 @@ body {
   height: 44px;
   padding: 0 24px;
 }
+
+/* TinyMCE popup layer z-index */
+.tox-tinymce-aux {
+  z-index: 99999 !important;
+}
+
+.tinymce.ui.FloatPanel {
+  z-index: 99999 !important;
+}
