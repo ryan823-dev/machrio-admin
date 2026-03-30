@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Typography, Space, Divider, message, Spin, Image, Steps } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Typography, Space, Divider, message, Spin, Image, Steps, Popconfirm, Tooltip } from 'antd';
+import { ArrowLeftOutlined, SaveOutlined, PlusOutlined, MinusCircleOutlined, CheckCircleOutlined, EyeOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getProduct, createProduct, updateProduct, getTopLevelCategories, getAllBrands, getProducts } from '../services/api';
 import type { Category, Brand, Product } from '../types';
@@ -227,53 +227,181 @@ export default function ProductFormWizard() {
         </Card>
 
         <Card title="商品图片" style={{ borderRadius: 12, marginBottom: 24 }}>
-          <Form.Item label="主图 URL" name="externalImageUrl">
-            <Input placeholder="https://example.com/image.jpg" onChange={(e) => setImageUrl(e.target.value)} />
-          </Form.Item>
-          {imageUrl && (
-            <Image 
-              src={imageUrl} 
-              alt="主图预览" 
-              width={200} 
-              style={{ borderRadius: 8, marginBottom: 16 }}
-              fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE0Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=" 
-            />
-          )}
-          <Divider style={{ margin: '12px 0' }}>附加图片</Divider>
-          <Space direction="vertical" style={{ width: '100%' }} size="small">
-            {additionalImages.map((url, idx) => (
-              <Space key={idx} style={{ width: '100%' }}>
-                <Input 
-                  value={url} 
-                  onChange={(e) => {
-                    const newImages = [...additionalImages];
-                    newImages[idx] = e.target.value;
-                    setAdditionalImages(newImages);
-                  }} 
-                  placeholder="图片 URL" 
-                  style={{ flex: 1 }} 
+          {/* 主图区域 */}
+          <div style={{ marginBottom: 16 }}>
+            <Text strong style={{ display: 'block', marginBottom: 8 }}>主图</Text>
+            {imageUrl ? (
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <Image
+                  src={imageUrl}
+                  alt="主图"
+                  width={200}
+                  height={200}
+                  style={{ borderRadius: 8, objectFit: 'cover' }}
+                  fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE0Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4="
+                  preview={{ mask: null }}
                 />
-                <Button danger type="text" onClick={() => setAdditionalImages(additionalImages.filter((_, i) => i !== idx))}>移除</Button>
-              </Space>
-            ))}
-            <Button type="dashed" onClick={() => setAdditionalImages([...additionalImages, ''])} icon={<PlusOutlined />} block>
-              添加图片 URL
-            </Button>
-            {additionalImages.length > 0 && (
-              <Space wrap>
-                {additionalImages.filter(url => url).map((url, idx) => (
-                  <Image 
-                    key={idx} 
-                    src={url} 
-                    alt={`附加图片${idx + 1}`} 
-                    width={80} 
-                    height={80} 
-                    style={{ borderRadius: 4, objectFit: 'cover' }}
-                    fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiIGZvbnQtc2l6ZT0iMTIiPkVycm9yPC90ZXh0Pjwvc3ZnPg==" 
-                  />
-                ))}
-              </Space>
+                {/* 操作按钮悬浮层 */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: 'rgba(0,0,0,0.5)',
+                  borderRadius: '0 0 8px 8px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 8,
+                  padding: '8px 0'
+                }}>
+                  <Tooltip title="预览">
+                    <Button
+                      type="text"
+                      icon={<EyeOutlined />}
+                      style={{ color: '#fff' }}
+                      onClick={() => window.open(imageUrl, '_blank')}
+                    />
+                  </Tooltip>
+                  <Tooltip title="替换">
+                    <Button
+                      type="text"
+                      icon={<UploadOutlined />}
+                      style={{ color: '#fff' }}
+                      onClick={() => {
+                        const newUrl = prompt('请输入新的图片URL:', imageUrl);
+                        if (newUrl && newUrl.trim()) {
+                          setImageUrl(newUrl.trim());
+                          form.setFieldValue('externalImageUrl', newUrl.trim());
+                        }
+                      }}
+                    />
+                  </Tooltip>
+                  <Popconfirm
+                    title="确认删除主图？"
+                    description="删除后需点击保存才会生效"
+                    onConfirm={() => {
+                      setImageUrl('');
+                      form.setFieldValue('externalImageUrl', '');
+                      message.success('主图已删除，请点击保存生效');
+                    }}
+                    okText="确认"
+                    cancelText="取消"
+                  >
+                    <Tooltip title="删除">
+                      <Button type="text" icon={<DeleteOutlined />} style={{ color: '#fff' }} />
+                    </Tooltip>
+                  </Popconfirm>
+                </div>
+              </div>
+            ) : (
+              /* 空状态：上传区域 */
+              <div
+                onClick={() => {
+                  const url = prompt('请输入图片URL:');
+                  if (url && url.trim()) {
+                    setImageUrl(url.trim());
+                    form.setFieldValue('externalImageUrl', url.trim());
+                  }
+                }}
+                style={{
+                  width: 200,
+                  height: 200,
+                  border: '2px dashed #d9d9d9',
+                  borderRadius: 8,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.3s',
+                  background: '#fafafa'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#1890ff'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#d9d9d9'; }}
+              >
+                <UploadOutlined style={{ fontSize: 32, color: '#999', marginBottom: 8 }} />
+                <Text type="secondary">点击上传主图</Text>
+                <Text type="secondary" style={{ fontSize: 12 }}>或输入图片URL</Text>
+              </div>
             )}
+          </div>
+
+          <Divider style={{ margin: '12px 0' }}>附加图片</Divider>
+
+          {/* 附加图片列表 */}
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
+            {/* 已有的附加图片展示 */}
+            {additionalImages.filter(url => url).length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                {additionalImages.filter(url => url).map((url) => {
+                  const realIdx = additionalImages.indexOf(url);
+                  return (
+                    <div key={realIdx} style={{ position: 'relative', display: 'inline-block' }}>
+                      <Image
+                        src={url}
+                        alt={`附加图片${realIdx + 1}`}
+                        width={80}
+                        height={80}
+                        style={{ borderRadius: 4, objectFit: 'cover' }}
+                        fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiIGZvbnQtc2l6ZT0iMTIiPkVycm9yPC90ZXh0Pjwvc3ZnPg=="
+                        preview={{ mask: null }}
+                      />
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: 'rgba(0,0,0,0.5)',
+                        borderRadius: '0 0 4px 4px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        padding: '4px 0'
+                      }}>
+                        <Tooltip title="预览">
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<EyeOutlined style={{ color: '#fff', fontSize: 12 }} />}
+                            onClick={() => window.open(url, '_blank')}
+                          />
+                        </Tooltip>
+                        <Popconfirm
+                          title="确认删除此图片？"
+                          onConfirm={() => {
+                            const newImages = additionalImages.filter((_, i) => i !== realIdx);
+                            setAdditionalImages(newImages);
+                            message.success('图片已删除');
+                          }}
+                          okText="确认"
+                          cancelText="取消"
+                        >
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<DeleteOutlined style={{ color: '#fff', fontSize: 12 }} />}
+                          />
+                        </Popconfirm>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* 添加新图片按钮 */}
+            <Button
+              type="dashed"
+              onClick={() => {
+                const url = prompt('请输入附加图片URL:');
+                if (url && url.trim()) {
+                  setAdditionalImages([...additionalImages.filter(u => u), url.trim()]);
+                }
+              }}
+              icon={<PlusOutlined />}
+              block
+            >
+              添加附加图片
+            </Button>
           </Space>
         </Card>
       </Col>
