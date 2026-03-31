@@ -11,6 +11,7 @@ import CustomersPage from './pages/CustomersPage';
 import BrandsPage from './pages/BrandsPage';
 import RfqInboxPage from './pages/RfqInboxPage';
 import ContactInboxPage from './pages/ContactInboxPage';
+import SmsInboxPage from './pages/SmsInboxPage';
 import BankAccountsPage from './pages/BankAccountsPage';
 import ShippingMethodsPage from './pages/ShippingMethodsPage';
 import ShippingRatesPage from './pages/ShippingRatesPage';
@@ -39,6 +40,7 @@ export default function App() {
           {/* Inbox */}
           <Route path="/rfq-inbox" element={<RfqInboxPage />} />
           <Route path="/contact-inbox" element={<ContactInboxPage />} />
+          <Route path="/sms-inbox" element={<SmsInboxPage />} />
           {/* Settings */}
           <Route path="/bank-accounts" element={<BankAccountsPage />} />
           <Route path="/shipping-methods" element={<ShippingMethodsPage />} />

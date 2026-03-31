@@ -228,3 +228,48 @@ export const deleteImage = async (imageUrl: string): Promise<void> => {
     throw new Error(error.message || `Delete failed: ${res.status}`);
   }
 };
+
+// SMS Messages
+export const getSmsMessages = (params: { page?: number; size?: number; phoneNumber?: string; status?: string; keyword?: string } = {}) => {
+  const q = new URLSearchParams();
+  q.set('page', String(params.page ?? 0));
+  q.set('size', String(params.size ?? 20));
+  if (params.phoneNumber) q.set('phoneNumber', params.phoneNumber);
+  if (params.status) q.set('status', params.status);
+  if (params.keyword) q.set('keyword', params.keyword);
+  return request<ApiResponse<PageResponse<SmsMessage>>>(`/sms/messages?${q}`);
+};
+export const getSmsMessage = (id: string) => request<ApiResponse<SmsMessage>>(`/sms/messages/${id}`);
+export const markSmsAsRead = (id: string) => request<ApiResponse<void>>(`/sms/messages/${id}/read`, { method: 'PUT' });
+export const deleteSmsMessage = (id: string) => request<ApiResponse<void>>(`/sms/messages/${id}`, { method: 'DELETE' });
+export const getSmsStats = () => request<ApiResponse<Record<string, number>>>('/sms/messages/stats');
+
+// SMS Numbers
+export const getSmsNumbers = () => request<ApiResponse<SmsNumber[]>>('/sms/numbers');
+export const syncSmsMessages = () => request<ApiResponse<void>>('/sms/sync', { method: 'POST' });
+export const syncSmsNumbers = () => request<ApiResponse<void>>('/sms/numbers/sync', { method: 'POST' });
+export const getSmsBalance = () => request<ApiResponse<string>>('/sms/balance');
+
+// SMS Types
+export interface SmsMessage {
+  id: string;
+  phoneNumber: string;
+  senderNumber: string;
+  message: string;
+  receivedAt: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface SmsNumber {
+  id: string;
+  phoneNumber: string;
+  countryCode: string;
+  rentedAt: string;
+  expirationDate: string;
+  plan: string;
+  autoRenew: boolean;
+  messageCount: number;
+  lastSmsReceivedDate: string;
+  active: boolean;
+}

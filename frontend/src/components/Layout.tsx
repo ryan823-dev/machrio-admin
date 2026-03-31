@@ -18,6 +18,7 @@ import {
   DollarOutlined,
   CheckCircleOutlined,
   UploadOutlined,
+  MessageOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 
@@ -54,6 +55,7 @@ const menuItems = [
     children: [
       { key: '/rfq-inbox', icon: <FileTextOutlined />, label: '询价请求' },
       { key: '/contact-inbox', icon: <MailOutlined />, label: '联系表单' },
+      { key: '/sms-inbox', icon: <MessageOutlined />, label: '短信收件箱' },
     ]
   },
   {
@@ -87,6 +89,7 @@ const breadcrumbMap: Record<string, string> = {
   '/customers/edit': '编辑客户',
   '/rfq-inbox': '询价请求',
   '/contact-inbox': '联系表单',
+  '/sms-inbox': '短信收件箱',
   '/bank-accounts': '银行账户',
   '/shipping-methods': '配送方式',
   '/shipping-rates': '运费模板',
