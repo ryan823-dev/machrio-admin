@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Card, Typography, Button, Segmented, Input, Drawer, Descriptions, Divider, message, Space, Statistic, Row, Col, Badge, Popconfirm } from 'antd';
-import { SearchOutlined, ReloadOutlined, MessageOutlined, PhoneOutlined, SyncOutlined, DeleteOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, MessageOutlined, PhoneOutlined, SyncOutlined, DeleteOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { getSmsMessages, getSmsNumbers, syncSmsMessages, syncSmsNumbers, deleteSmsMessage, markSmsAsRead, getSmsStats, getSmsBalance } from '../services/api';
 import type { SmsMessage, SmsNumber } from '../services/api';
 import EmptyState from '../components/EmptyState';
@@ -63,7 +63,12 @@ export default function SmsInboxPage() {
         getSmsStats(),
         getSmsBalance()
       ]);
-      setStats(statsRes.data || { total: 0, unread: 0, read: 0 });
+      const statsData = statsRes.data;
+      setStats({
+        total: statsData?.total ?? 0,
+        unread: statsData?.unread ?? 0,
+        read: statsData?.read ?? 0,
+      });
       setBalance(balanceRes.data || 'N/A');
     } catch {
       console.error('Failed to load stats');
