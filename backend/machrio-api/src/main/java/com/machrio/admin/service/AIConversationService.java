@@ -65,7 +65,8 @@ public class AIConversationService {
         } else {
             conversationPage = aiConversationRepository.findAll(pageRequest);
         }
-        List<AIConversationDTO> items = conversationPage.getContent().stream()
+        List<AIConversation> normalizedConversations = mergeDuplicateSessions(conversationPage.getContent());
+        List<AIConversationDTO> items = normalizedConversations.stream()
                 .map(this::toConversationDto)
                 .collect(Collectors.toList());
 
@@ -106,9 +107,12 @@ public class AIConversationService {
 
         normalizeRequest(request);
 
-        boolean existed = aiConversationRepository.findBySessionId(request.getSessionId()).isPresent();
-        AIConversation conversation = aiConversationRepository.findBySessionId(request.getSessionId())
-                .orElseGet(AIConversation::new);
+        List<AIConversation> sessionConversations = aiConversationRepository.findAllBySessionIdOrderByCreatedAtAsc(request.getSessionId());
+        AIConversation conversation = mergeConversationGroup(sessionConversations);
+        boolean existed = conversation != null;
+        if (conversation == null) {
+            conversation = new AIConversation();
+        }
 
         conversation.setSessionId(request.getSessionId());
         conversation.setUserId(request.getUserId());
@@ -279,6 +283,108 @@ public class AIConversationService {
         return value == null || value.isBlank() ? defaultValue : value;
     }
 
+    private List<AIConversation> mergeDuplicateSessions(List<AIConversation> conversations) {
+        Map<String, List<AIConversation>> grouped = conversations.stream()
+                .collect(Collectors.groupingBy(AIConversation::getSessionId));
+
+        List<AIConversation> merged = new ArrayList<>();
+        for (List<AIConversation> group : grouped.values()) {
+            AIConversation canonical = mergeConversationGroup(group);
+            if (canonical != null) {
+                merged.add(canonical);
+            }
+        }
+
+        merged.sort(Comparator
+                .comparing((AIConversation conversation) -> conversation.getLastMessageAt() != null ? conversation.getLastMessageAt() : conversation.getCreatedAt(), Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(AIConversation::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+        return merged;
+    }
+
+    private AIConversation mergeConversationGroup(List<AIConversation> conversations) {
+        if (conversations == null || conversations.isEmpty()) {
+            return null;
+        }
+
+        List<AIConversation> ordered = conversations.stream()
+                .sorted(Comparator.comparing(AIConversation::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())))
+                .collect(Collectors.toList());
+
+        AIConversation canonical = ordered.get(0);
+        if (ordered.size() == 1) {
+            return canonical;
+        }
+
+        for (int i = 1; i < ordered.size(); i++) {
+            AIConversation duplicate = ordered.get(i);
+            if (duplicate.getId().equals(canonical.getId())) {
+                continue;
+            }
+
+            conversationMessageRepository.moveConversationMessages(duplicate.getId(), canonical.getId());
+            customerRequirementRepository.moveConversationRequirements(duplicate.getId(), canonical.getId());
+            mergeConversationFields(canonical, duplicate);
+        }
+
+        refreshConversationStats(canonical);
+        aiConversationRepository.save(canonical);
+        aiConversationRepository.deleteAllByIdIn(
+                ordered.stream()
+                        .skip(1)
+                        .map(AIConversation::getId)
+                        .collect(Collectors.toList())
+        );
+        return canonical;
+    }
+
+    private void mergeConversationFields(AIConversation canonical, AIConversation duplicate) {
+        canonical.setUserId(firstNonBlank(canonical.getUserId(), duplicate.getUserId()));
+        canonical.setUserName(firstNonBlank(canonical.getUserName(), duplicate.getUserName()));
+        canonical.setUserEmail(firstNonBlank(canonical.getUserEmail(), duplicate.getUserEmail()));
+        canonical.setUserPhone(firstNonBlank(canonical.getUserPhone(), duplicate.getUserPhone()));
+        canonical.setUserCompany(firstNonBlank(canonical.getUserCompany(), duplicate.getUserCompany()));
+        canonical.setUserJobTitle(firstNonBlank(canonical.getUserJobTitle(), duplicate.getUserJobTitle()));
+        canonical.setSourcePage(firstNonBlank(canonical.getSourcePage(), duplicate.getSourcePage()));
+        canonical.setSourceUrl(firstNonBlank(canonical.getSourceUrl(), duplicate.getSourceUrl()));
+        canonical.setConversationType(firstNonBlank(canonical.getConversationType(), duplicate.getConversationType()));
+        canonical.setStatus(preferConversationStatus(canonical.getStatus(), duplicate.getStatus()));
+        canonical.setPriority(preferPriority(canonical.getPriority(), duplicate.getPriority()));
+        canonical.setIntentScore(Math.max(nullSafeInt(canonical.getIntentScore()), nullSafeInt(duplicate.getIntentScore())));
+        canonical.setBudgetRange(firstNonBlank(canonical.getBudgetRange(), duplicate.getBudgetRange()));
+        canonical.setPurchaseTimeline(firstNonBlank(canonical.getPurchaseTimeline(), duplicate.getPurchaseTimeline()));
+        canonical.setAssignedTo(firstNonBlank(canonical.getAssignedTo(), duplicate.getAssignedTo()));
+        canonical.setFollowUpStatus(firstNonBlank(canonical.getFollowUpStatus(), duplicate.getFollowUpStatus()));
+        canonical.setFollowUpNotes(firstNonBlank(canonical.getFollowUpNotes(), duplicate.getFollowUpNotes()));
+        canonical.setUserAgent(firstNonBlank(canonical.getUserAgent(), duplicate.getUserAgent()));
+        canonical.setIpAddress(firstNonBlank(canonical.getIpAddress(), duplicate.getIpAddress()));
+        canonical.setConvertedToCustomer(Boolean.TRUE.equals(canonical.getConvertedToCustomer()) || Boolean.TRUE.equals(duplicate.getConvertedToCustomer()));
+        if (canonical.getCustomerId() == null) {
+            canonical.setCustomerId(duplicate.getCustomerId());
+        }
+        if (canonical.getFollowUpDeadline() == null || (duplicate.getFollowUpDeadline() != null && duplicate.getFollowUpDeadline().isAfter(canonical.getFollowUpDeadline()))) {
+            canonical.setFollowUpDeadline(duplicate.getFollowUpDeadline());
+        }
+        canonical.setExtractedNeeds(mergeMaps(canonical.getExtractedNeeds(), duplicate.getExtractedNeeds()));
+        canonical.setMetadata(mergeMaps(canonical.getMetadata(), duplicate.getMetadata()));
+        canonical.setProductInterests(mergeStringArrays(canonical.getProductInterests(), duplicate.getProductInterests()));
+        canonical.setTags(mergeStringArrays(canonical.getTags(), duplicate.getTags()));
+    }
+
+    private void refreshConversationStats(AIConversation conversation) {
+        List<ConversationMessage> storedMessages = conversationMessageRepository.findByConversationIdOrderByCreatedAtAsc(conversation.getId());
+        conversation.setMessageCount(storedMessages.size());
+        conversation.setFirstMessageAt(storedMessages.stream()
+                .map(ConversationMessage::getCreatedAt)
+                .filter(Objects::nonNull)
+                .min(OffsetDateTime::compareTo)
+                .orElse(conversation.getFirstMessageAt()));
+        conversation.setLastMessageAt(storedMessages.stream()
+                .map(ConversationMessage::getCreatedAt)
+                .filter(Objects::nonNull)
+                .max(OffsetDateTime::compareTo)
+                .orElse(conversation.getLastMessageAt()));
+    }
+
     private List<ConversationMessageDTO> resolveConversationMessages(AIConversation conversation) {
         List<ConversationMessageDTO> storedMessages = conversationMessageRepository
                 .findByConversationIdOrderByCreatedAtAsc(conversation.getId())
@@ -377,6 +483,77 @@ public class AIConversationService {
             }
         }
         return null;
+    }
+
+    private int nullSafeInt(Integer value) {
+        return value == null ? 0 : value;
+    }
+
+    private String preferConversationStatus(String current, String incoming) {
+        if (isBlank(current)) {
+            return incoming;
+        }
+        if ("converted".equalsIgnoreCase(current) || "archived".equalsIgnoreCase(current)) {
+            return current;
+        }
+        return isBlank(incoming) ? current : incoming;
+    }
+
+    private String preferPriority(String current, String incoming) {
+        if (isBlank(current)) {
+            return incoming;
+        }
+        if (priorityWeight(incoming) > priorityWeight(current)) {
+            return incoming;
+        }
+        return current;
+    }
+
+    private int priorityWeight(String priority) {
+        if (priority == null) {
+            return 0;
+        }
+        return switch (priority.toLowerCase()) {
+            case "urgent" -> 4;
+            case "high" -> 3;
+            case "medium" -> 2;
+            case "low" -> 1;
+            default -> 0;
+        };
+    }
+
+    private Map<String, Object> mergeMaps(Map<String, Object> current, Map<String, Object> incoming) {
+        if (current == null || current.isEmpty()) {
+            return incoming == null ? Map.of() : new LinkedHashMap<>(incoming);
+        }
+        Map<String, Object> merged = new LinkedHashMap<>(current);
+        if (incoming != null) {
+            incoming.forEach((key, value) -> {
+                if (value != null && (!(value instanceof String stringValue) || !stringValue.isBlank())) {
+                    merged.putIfAbsent(key, value);
+                }
+            });
+        }
+        return merged;
+    }
+
+    private String[] mergeStringArrays(String[] current, String[] incoming) {
+        List<String> merged = new ArrayList<>();
+        if (current != null) {
+            for (String item : current) {
+                if (item != null && !item.isBlank() && !merged.contains(item)) {
+                    merged.add(item);
+                }
+            }
+        }
+        if (incoming != null) {
+            for (String item : incoming) {
+                if (item != null && !item.isBlank() && !merged.contains(item)) {
+                    merged.add(item);
+                }
+            }
+        }
+        return merged.toArray(new String[0]);
     }
 
     private void normalizeRequest(AIConversationIngestRequest request) {

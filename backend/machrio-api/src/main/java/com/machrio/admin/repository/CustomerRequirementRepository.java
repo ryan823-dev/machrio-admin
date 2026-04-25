@@ -4,6 +4,7 @@ import com.machrio.admin.entity.CustomerRequirement;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -38,4 +39,8 @@ public interface CustomerRequirementRepository extends JpaRepository<CustomerReq
               )
         """)
     Page<CustomerRequirement> search(String status, String priority, String keyword, Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE CustomerRequirement r SET r.conversationId = :targetConversationId WHERE r.conversationId = :sourceConversationId")
+    void moveConversationRequirements(UUID sourceConversationId, UUID targetConversationId);
 }

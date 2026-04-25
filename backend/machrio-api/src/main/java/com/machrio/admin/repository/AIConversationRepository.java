@@ -4,15 +4,19 @@ import com.machrio.admin.entity.AIConversation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
 public interface AIConversationRepository extends JpaRepository<AIConversation, UUID> {
 
     java.util.Optional<AIConversation> findBySessionId(String sessionId);
+
+    List<AIConversation> findAllBySessionIdOrderByCreatedAtAsc(String sessionId);
 
     Page<AIConversation> findByStatus(String status, Pageable pageable);
 
@@ -44,4 +48,8 @@ public interface AIConversationRepository extends JpaRepository<AIConversation, 
               )
         """)
     Page<AIConversation> search(String status, String priority, String keyword, Pageable pageable);
+
+    @Modifying
+    @Query("DELETE FROM AIConversation c WHERE c.id IN :ids")
+    void deleteAllByIdIn(List<UUID> ids);
 }
