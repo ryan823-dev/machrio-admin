@@ -29,6 +29,8 @@ import java.time.format.DateTimeFormatter;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -72,9 +74,7 @@ public class AIConversationService {
 
     public AIConversationDetailDTO getConversationDetail(UUID id) {
         AIConversation conversation = getConversationEntity(id);
-        List<ConversationMessageDTO> messages = conversationMessageRepository.findByConversationIdOrderByCreatedAtAsc(id).stream()
-                .map(this::toMessageDto)
-                .collect(Collectors.toList());
+        List<ConversationMessageDTO> messages = resolveConversationMessages(conversation);
         List<CustomerRequirementDTO> requirements = customerRequirementRepository.findByConversationIdOrderByCreatedAtDesc(id).stream()
                 .map(this::toRequirementDto)
                 .collect(Collectors.toList());
@@ -88,10 +88,8 @@ public class AIConversationService {
     }
 
     public List<ConversationMessageDTO> getConversationMessages(UUID id) {
-        ensureConversationExists(id);
-        return conversationMessageRepository.findByConversationIdOrderByCreatedAtAsc(id).stream()
-                .map(this::toMessageDto)
-                .collect(Collectors.toList());
+        AIConversation conversation = getConversationEntity(id);
+        return resolveConversationMessages(conversation);
     }
 
     @Transactional
@@ -279,6 +277,106 @@ public class AIConversationService {
 
     private String defaultIfBlank(String value, String defaultValue) {
         return value == null || value.isBlank() ? defaultValue : value;
+    }
+
+    private List<ConversationMessageDTO> resolveConversationMessages(AIConversation conversation) {
+        List<ConversationMessageDTO> storedMessages = conversationMessageRepository
+                .findByConversationIdOrderByCreatedAtAsc(conversation.getId())
+                .stream()
+                .map(this::toMessageDto)
+                .collect(Collectors.toList());
+
+        if (shouldUseMetadataMessages(conversation, storedMessages)) {
+            List<ConversationMessageDTO> metadataMessages = extractMessagesFromMetadata(conversation);
+            if (!metadataMessages.isEmpty()) {
+                return metadataMessages;
+            }
+        }
+
+        return storedMessages;
+    }
+
+    private boolean shouldUseMetadataMessages(AIConversation conversation, List<ConversationMessageDTO> storedMessages) {
+        Integer expectedMessageCount = conversation.getMessageCount();
+        if (expectedMessageCount == null || expectedMessageCount <= storedMessages.size()) {
+            return storedMessages.isEmpty();
+        }
+        return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<ConversationMessageDTO> extractMessagesFromMetadata(AIConversation conversation) {
+        if (conversation.getMetadata() == null) {
+            return List.of();
+        }
+
+        Object rawMessages = conversation.getMetadata().get("messages");
+        if (!(rawMessages instanceof List<?> rawList)) {
+            return List.of();
+        }
+
+        List<ConversationMessageDTO> items = new ArrayList<>();
+        for (Object rawItem : rawList) {
+            if (!(rawItem instanceof Map<?, ?> rawMap)) {
+                continue;
+            }
+
+            Map<String, Object> messageMap = (Map<String, Object>) rawMap;
+            String content = asString(messageMap.get("content"));
+            if (content == null || content.isBlank()) {
+                continue;
+            }
+
+            String messageType = firstNonBlank(
+                    asString(messageMap.get("messageType")),
+                    asString(messageMap.get("role")),
+                    "user"
+            );
+
+            String createdAt = firstNonBlank(
+                    asString(messageMap.get("createdAt")),
+                    asString(messageMap.get("timestamp")),
+                    format(conversation.getCreatedAt())
+            );
+
+            Map<String, Object> contextData = null;
+            Object products = messageMap.get("products");
+            if (products instanceof List<?> productList && !productList.isEmpty()) {
+                contextData = new LinkedHashMap<>();
+                contextData.put("products", productList);
+            }
+
+            items.add(new ConversationMessageDTO(
+                    null,
+                    conversation.getId(),
+                    messageType,
+                    content,
+                    "text",
+                    null,
+                    null,
+                    null,
+                    null,
+                    contextData,
+                    null,
+                    createdAt
+            ));
+        }
+
+        items.sort(Comparator.comparing(item -> item.getCreatedAt() == null ? "" : item.getCreatedAt()));
+        return items;
+    }
+
+    private String asString(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private void normalizeRequest(AIConversationIngestRequest request) {
