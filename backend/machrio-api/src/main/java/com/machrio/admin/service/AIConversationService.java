@@ -65,8 +65,7 @@ public class AIConversationService {
         } else {
             conversationPage = aiConversationRepository.findAll(pageRequest);
         }
-        List<AIConversation> normalizedConversations = mergeDuplicateSessions(conversationPage.getContent());
-        List<AIConversationDTO> items = normalizedConversations.stream()
+        List<AIConversationDTO> items = conversationPage.getContent().stream()
                 .map(this::toConversationDto)
                 .collect(Collectors.toList());
 
@@ -281,24 +280,6 @@ public class AIConversationService {
 
     private String defaultIfBlank(String value, String defaultValue) {
         return value == null || value.isBlank() ? defaultValue : value;
-    }
-
-    private List<AIConversation> mergeDuplicateSessions(List<AIConversation> conversations) {
-        Map<String, List<AIConversation>> grouped = conversations.stream()
-                .collect(Collectors.groupingBy(AIConversation::getSessionId));
-
-        List<AIConversation> merged = new ArrayList<>();
-        for (List<AIConversation> group : grouped.values()) {
-            AIConversation canonical = mergeConversationGroup(group);
-            if (canonical != null) {
-                merged.add(canonical);
-            }
-        }
-
-        merged.sort(Comparator
-                .comparing((AIConversation conversation) -> conversation.getLastMessageAt() != null ? conversation.getLastMessageAt() : conversation.getCreatedAt(), Comparator.nullsLast(Comparator.reverseOrder()))
-                .thenComparing(AIConversation::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
-        return merged;
     }
 
     private AIConversation mergeConversationGroup(List<AIConversation> conversations) {
