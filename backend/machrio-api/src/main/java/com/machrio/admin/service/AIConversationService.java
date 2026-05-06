@@ -309,12 +309,11 @@ public class AIConversationService {
 
         refreshConversationStats(canonical);
         aiConversationRepository.save(canonical);
-        aiConversationRepository.deleteAllByIdIn(
-                ordered.stream()
-                        .skip(1)
-                        .map(AIConversation::getId)
-                        .collect(Collectors.toList())
-        );
+        List<UUID> duplicateIds = ordered.stream()
+                .skip(1)
+                .map(AIConversation::getId)
+                .collect(Collectors.toList());
+        aiConversationRepository.deleteAllById(duplicateIds);
         return canonical;
     }
 
